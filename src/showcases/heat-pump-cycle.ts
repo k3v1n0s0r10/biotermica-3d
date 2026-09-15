@@ -1,8 +1,9 @@
 import { brand } from '../brand/theme';
 import { Color, Vector3, type PerspectiveCamera } from 'three';
 import type { createStudio } from '../scenes/studio';
-import { createHeatFlow } from './heat-flow';
-import { loopTime } from './turntable';
+import { createHeatFlow } from '../animations/heat-flow';
+import { createFanAnimation } from '../animations/fan';
+import { loopTime } from '../animations/turntable';
 
 type Stage = ReturnType<typeof createStudio>;
 type Point = [number, number, number];
@@ -29,12 +30,12 @@ export const showcaseShots: readonly Shot[] = [
 export const showcaseDuration = 24;
 const ease = (t: number) => t * t * t * (t * (t * 6 - 15) + 10);
 
-export function createShowcase(stage: Stage, camera: PerspectiveCamera) {
+export function createHeatPumpCycle(stage: Stage, camera: PerspectiveCamera) {
   const eye = new Vector3(), target = new Vector3();
   const nextEye = new Vector3(), nextTarget = new Vector3();
   const aColor = new Color(), bColor = new Color();
   const flow = createHeatFlow(stage.product);
-  const fan = stage.product.getObjectByName('fan-rotor')!;
+  const fan = createFanAnimation(stage.product);
   return {
     duration: showcaseDuration,
     sample(seconds: number) {
@@ -50,7 +51,7 @@ export function createShowcase(stage: Stage, camera: PerspectiveCamera) {
       camera.position.copy(eye);
       camera.lookAt(target);
       stage.product.rotation.y = a.rotation + (b.rotation - a.rotation) * u;
-      fan.rotation.y = t * Math.PI / 3; // Exactly four turns per loop.
+      fan.sample(t);
       const background = aColor.setHex(a.background).lerp(bColor.setHex(b.background), u);
       (stage.scene.background as Color).copy(background);
       stage.scene.fog!.color.copy(background);

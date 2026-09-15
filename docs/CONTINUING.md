@@ -2,6 +2,8 @@
 
 ## Start here
 
+Read [ARCHITECTURE.md](ARCHITECTURE.md) for the project-wide composition rules: models can contain models, models can support multiple animations, and showcases are the final composition layer.
+
 Read [MODEL-GUIDE.md](MODEL-GUIDE.md) before changing the heat-pump shell, [SHOWCASE.md](SHOWCASE.md) before changing the film, and [BRAND.md](BRAND.md) for every new presentation. [LIBRARY.md](LIBRARY.md) describes registration and selection. These documents describe the current implementation; update them with accepted changes instead of appending contradictory design revisions.
 
 The starter contains one procedural exterior (`heat-pump-v1`), one four-step showcase (`form-in-motion`), and two inspection animations (`turntable`, `fan-study`). The intended direction is **many independent models, many showcases, and compatible reusable animations**, all discoverable through the catalog-driven library.
@@ -18,7 +20,7 @@ The starter contains one procedural exterior (`heat-pump-v1`), one four-step sho
 
 ### Another showcase
 
-1. Create a separate sequence module; keep the starter available as a reference instead of replacing its stable ID.
+1. Create a descriptively named module in `src/showcases/`; compose reusable model animations there. Keep the starter available as a reference instead of replacing its stable ID.
 2. Register a `ShowcaseEntry` with a unique ID, owning model, edition, captions and matching duration. Menus derive from the catalog automatically.
 3. Return `{ duration, sample(seconds) }`; sample returns a valid zero-based chapter index. Set every animated property from time rather than previous-frame state.
 4. Reuse the shared brand shell and palette. Compose camera views around both the product and the caption area. Add explicit chapter layout metadata if the starter's high water-caption placement does not fit.

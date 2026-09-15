@@ -1,13 +1,34 @@
 import { expect, test } from 'bun:test';
 import { PerspectiveCamera, Color, Vector3 } from 'three';
 import { createStudio } from '../src/scenes/studio';
-import { createShowcase } from '../src/animations/showcase';
+import { createHeatPumpCycle } from '../src/showcases/heat-pump-cycle';
 import { disposeObject } from '../src/core/dispose';
+import { animations, models } from '../src/library/catalog';
+
+test('showcase shares the inspection fan motion while retaining cabinet choreography', () => {
+  const stage = createStudio();
+  const model = models[0]!.create();
+  const study = animations.find(entry => entry.id === 'fan-study')!.create(model);
+  const film = createHeatPumpCycle(stage, new PerspectiveCamera(35, 16 / 9));
+  for (const time of [0.3, 1.1, 5.99, 6, 9.65, 23.99, 24, -0.3]) {
+    study.sample(time);
+    film.sample(time);
+    expect(stage.product.getObjectByName('fan-rotor')!.rotation.y)
+      .toBeCloseTo(model.getObjectByName('fan-rotor')!.rotation.y);
+  }
+  study.sample(0.3);
+  expect(model.getObjectByName('fan-rotor')!.rotation.y).toBeCloseTo(Math.PI);
+  film.sample(8);
+  expect(stage.product.rotation.y).toBeCloseTo(0.5);
+  expect(model.rotation.y).toBe(0);
+  disposeObject(stage.scene);
+  disposeObject(model);
+});
 
 test('showcase reproduces camera, product, fan and lighting after arbitrary seeks', () => {
   const stage = createStudio();
   const camera = new PerspectiveCamera(35, 16 / 9);
-  const film = createShowcase(stage, camera);
+  const film = createHeatPumpCycle(stage, camera);
   const state = () => ({
     camera: camera.position.toArray(), rotation: camera.quaternion.toArray(),
     product: stage.product.rotation.y,

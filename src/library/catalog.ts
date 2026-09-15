@@ -1,7 +1,8 @@
 import type { Group, PerspectiveCamera } from 'three';
 import { createHeatPump } from '../models/heat-pump';
-import { createTurntable, loopTime, type AnimationSequence } from '../animations/turntable';
-import { createShowcase } from '../animations/showcase';
+import { createTurntable, type AnimationSequence } from '../animations/turntable';
+import { createFanAnimation, fanDuration } from '../animations/fan';
+import { createHeatPumpCycle, showcaseDuration } from '../showcases/heat-pump-cycle';
 import type { createStudio } from '../scenes/studio';
 
 export interface ModelEntry {
@@ -27,16 +28,15 @@ export const models: ModelEntry[] = [{
 }];
 export const animations: AnimationEntry[] = [
   { id: 'turntable', name: 'Vista de 360°', description: 'Un giro de ocho segundos para explorar todo el exterior.', duration: 8, modelIds: ['heat-pump-v1'], create: createTurntable },
-  { id: 'fan-study', name: 'Movimiento del ventilador', description: 'Explora el rotor de cinco aspas en movimiento con el gabinete quieto.', duration: 6, modelIds: ['heat-pump-v1'], create(model) {
-    const fan = model.getObjectByName('fan-rotor');
-    if (!fan) throw new Error('Fan motion requires a fan-rotor group.');
-    return { duration: 6, sample(seconds) { model.rotation.y = 0; fan.rotation.y = loopTime(seconds, 6) / 6 * Math.PI * 2; } };
+  { id: 'fan-study', name: 'Movimiento del ventilador', description: 'Explora el rotor de cinco aspas en movimiento con el gabinete quieto.', duration: fanDuration, modelIds: ['heat-pump-v1'], create(model) {
+    const fan = createFanAnimation(model);
+    return { duration: fan.duration, sample(seconds) { model.rotation.y = 0; fan.sample(seconds); } };
   } },
 ];
 export const showcases: ShowcaseEntry[] = [{
   id: 'form-in-motion', name: 'El calor del aire, en tu agua', edition: 'Tecnología para disfrutar',
   description: 'Descubre cómo aprovechamos el calor del aire para calentar tu agua en cuatro pasos.',
-  duration: 24, modelId: 'heat-pump-v1', create: createShowcase,
+  duration: showcaseDuration, modelId: 'heat-pump-v1', create: createHeatPumpCycle,
   chapters: [
     ['CAPTAMOS EL CALOR', 'El calor empieza\nen el aire.', 'El aire entra por los paneles laterales.'],
     ['APROVECHAMOS SU ENERGÍA', 'Su calor se queda.\nEl aire frío sale.', 'El ventilador expulsa el aire después de ceder calor.'],

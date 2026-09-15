@@ -12,6 +12,8 @@ The active model and experience appear beside the Biblioteca button. URL paramet
 
 ## Add content
 
+Follow [ARCHITECTURE.md](ARCHITECTURE.md): models and animations are composable building blocks; showcases assemble them into complete presentations. A model may support multiple animations, and nested component models need not be registered separately.
+
 Edit `src/library/catalog.ts`. The menus and counts derive from these arrays; do not add menu buttons manually.
 
 ### Model
@@ -23,6 +25,8 @@ Add a `ModelEntry` with a stable ID, display name, description, version, synchro
 Add an `AnimationEntry` with a stable ID, metadata, compatible `modelIds`, and a factory returning `{ duration, sample(seconds) }`. Sample absolute time and reset all animated properties deterministically. Include required named nodes in the model contract. No model-specific assumptions belong in the library UI. `fan-study`, for example, requires the `fan-rotor` node; the turntable acts on the product root.
 
 ### Showcase
+
+Implement each presentation in its own `src/showcases/<subject>.ts` file and import its factory into the catalog. Reuse animation factories from `src/animations/` instead of duplicating their motion code.
 
 Add a `ShowcaseEntry` with its owning `modelId`, chapter captions, edition, duration, and camera/stage sequence factory. The factory returns `{ duration, sample(seconds) }`; sampling returns the chapter index used for the overlay. Metadata durations should agree with actual sequences. The shared studio is currently the stage contract; introduce explicit stage factories when showcases need genuinely different environments.
 

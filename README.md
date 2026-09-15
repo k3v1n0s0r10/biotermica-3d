@@ -11,6 +11,7 @@ bun run dev
 
 Open the local URL printed by Vite. The default view plays a 24-second cinematic showcase with animated camera angles, lighting, colours and fan motion. Use **Inspeccionar** for manual orbit/zoom and the eight-second turntable. Both modes support playback and scrubbing. Reduced-motion users start paused.
 
+- [Modular architecture and composition rules](docs/ARCHITECTURE.md)
 - [Continuation checklist and extension boundaries](docs/CONTINUING.md)
 - [Biotérmica brand guidelines](docs/BRAND.md)
 - [Library menus and adding new entries](docs/LIBRARY.md)
@@ -49,8 +50,10 @@ src/
     studio.ts          Product assembly, studio lights, floor
   animations/
     turntable.ts       Absolute-time sequence interface and inspection loop
-    showcase.ts        Reproducible cinematic camera, colour and product animation
+    fan.ts             Shared rotor motion for inspection and showcases
     heat-flow.ts       Four-stage air and water effects
+  showcases/
+    heat-pump-cycle.ts Complete heat-pump presentation composing shared animations
   style.css
 public/
   brand/               Official Biotérmica emblem
@@ -61,6 +64,8 @@ tests/                Bun animation tests
 ```
 
 ## Add a product
+
+Models can contain other models and support multiple reusable animations. Showcases are the final layer that connects these parts into a presentation. Follow the [architecture rules](docs/ARCHITECTURE.md) when extending the project.
 
 1. Export a standard `.glb` into `public/models/<product-id>/model.glb`. For `.gltf`, retain its relative texture and binary paths.
 2. Load it with `await loadModel('models/<product-id>/model.glb')` from `src/models/load-model.ts`.

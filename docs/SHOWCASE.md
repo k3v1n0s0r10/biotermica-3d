@@ -19,7 +19,7 @@ Camera keys are at 0, 5, 8, 11, 14, 18, 21 and 24 seconds; chapter boundaries ar
 
 ## Flow implementation and model contract
 
-`src/animations/heat-flow.ts` attaches `showcase-heat-flow` to the model's `cabinet` group. It expects two direct children named `pvc-water-socket`, sorts them by local X, and reads their positions with a +0.065 m local Z offset to reach the openings. `createShowcase` also expects a `fan-rotor` node. These assumptions are specific to the current heat pump; do not apply this sequence to another model without adapting its attachment points.
+`src/animations/heat-flow.ts` attaches `showcase-heat-flow` to the model's `cabinet` group. It expects two direct children named `pvc-water-socket`, sorts them by local X, and reads their positions with a +0.065 m local Z offset to reach the openings. `createHeatPumpCycle` composes the shared `createFanAnimation`, which expects a `fan-rotor` node. These assumptions are specific to the current heat pump; do not apply this sequence to another model without adapting its attachment points.
 
 - Air: two `Points` systems, 360 streams each with four-point trails (1,440 rendered points per stage), size 0.018, shared soft sprite, warm amber / icy cyan colors. Keep the fine, dense appearance.
 - Water: separate translucent `TubeGeometry` surfaces with physical materials and 70 instanced moving droplets per port. Do not reuse air sprites for water.
@@ -32,7 +32,8 @@ Camera keys are at 0, 5, 8, 11, 14, 18, 21 and 24 seconds; chapter boundaries ar
 
 | Concern | File |
 | --- | --- |
-| Camera keys, product yaw, lighting and backdrop | `src/animations/showcase.ts` |
+| Camera keys, product yaw, lighting and backdrop | `src/showcases/heat-pump-cycle.ts` |
+| Shared fan rotation (inspection and showcase) | `src/animations/fan.ts` |
 | Air/water visuals, paths and six-second stages | `src/animations/heat-flow.ts` |
 | Shared 3D brand palette | `src/brand/theme.ts` |
 | Registration, chapter copy, model ownership | `src/library/catalog.ts` |
