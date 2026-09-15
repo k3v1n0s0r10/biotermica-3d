@@ -46,11 +46,11 @@ export function createHeatFlow(product: Object3D) {
       return new Vector3(port.x, port.y - (stage === 2 ? 0.10 : 0.025) * d * d, port.z + d * 0.36);
     }));
     const material = new MeshPhysicalMaterial({
-      color: stage === 2 ? 0xffe5bd : 0xd4f5ff,
-      metalness: 0, roughness: 0.055, transmission: 0.88,
+      color: stage === 2 ? 0xffe6df : 0x79d8ff,
+      metalness: 0, roughness: 0.055, transmission: 0.96,
       thickness: 0.028, ior: 1.333,
-      attenuationColor: new Color(stage === 2 ? 0xffbe70 : 0x70d4ee),
-      attenuationDistance: 0.16, envMapIntensity: 1.4,
+      attenuationColor: new Color(stage === 2 ? 0xffb6a8 : 0x24aeef),
+      attenuationDistance: stage === 2 ? 0.3 : 0.18, envMapIntensity: 1.4,
       clearcoat: 0.35, clearcoatRoughness: 0.035,
       transparent: true, opacity: 0, depthWrite: false,
     });
