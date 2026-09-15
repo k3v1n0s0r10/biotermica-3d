@@ -14,21 +14,23 @@ export function createHeatFlow(product: Object3D) {
   if (sockets.length < 2) throw new Error('Heat flow requires two PVC water sockets.');
   const ports = sockets.map(socket => socket.position.clone().add(new Vector3(0, 0, 0.065)));
   const root = new Group(); root.name = 'showcase-heat-flow'; cabinet.add(root);
-  const trailLength = 4;
+  const trailLength = 8;
+  const trailFractions = [1, 0.75, 0.75, 0.5, 0.5, 0.25, 0.25, 0];
   const systems = [0xffca83, 0x86ddfa].map((tint, stage) => {
-    const count = 36_000;
+    const count = 9_000;
     const seeds = Array.from({ length: count }, (_, i) => Array.from({ length: 5 }, (_, salt) => seed(i, salt + 1)));
     const positions = new Float32Array(count * trailLength * 3);
-    const colors = new Float32Array(positions.length);
+    const colors = new Float32Array(count * trailLength * 4);
     const color = new Color(tint);
     for (let i = 0; i < count; i++) for (let tail = 0; tail < trailLength; tail++) {
-      const offset = (i * trailLength + tail) * 3;
-      const intensity = [0.12, 0.7, 0.7, 1][tail]!;
-      colors[offset] = color.r * intensity; colors[offset + 1] = color.g * intensity; colors[offset + 2] = color.b * intensity;
+      const offset = (i * trailLength + tail) * 4;
+      colors[offset] = color.r; colors[offset + 1] = color.g; colors[offset + 2] = color.b;
+      // Fade to transparent at both ends, rather than leaving bright dust-like heads.
+      colors[offset + 3] = Math.sin(trailFractions[tail]! * Math.PI) ** 2;
     }
     const geometry = new BufferGeometry();
     geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
-    geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
+    geometry.setAttribute('color', new Float32BufferAttribute(colors, 4));
     const material = new LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0, depthWrite: false, blending: NormalBlending, toneMapped: false });
     const points = new LineSegments(geometry, material); points.frustumCulled = false;
     points.name = ['warm-air-intake', 'cold-air-exhaust', 'hot-water-outlet', 'cold-water-inlet'][stage]!;
@@ -68,18 +70,16 @@ export function createHeatFlow(product: Object3D) {
       const local = t - active * 6;
       for (const { points, count, stage, seeds } of systems) {
         points.visible = stage === active;
-        points.material.opacity = stage === active ? 0.28 * smooth(local / 0.4) * smooth((6 - local) / 0.45) : 0;
+        points.material.opacity = stage === active ? 0.035 * smooth(local / 0.4) * smooth((6 - local) / 0.45) : 0;
         if (!points.visible) continue;
         const position = points.geometry.getAttribute('position');
         for (let i = 0; i < count; i++) for (let tail = 0; tail < trailLength; tail++) {
           const random = seeds[i]!;
-          // Two connected segments form one fine streak, with a tapered tail.
-          // Vary its length smoothly as the air stretches and compresses.
-          const head = fract(t / (0.7 + random[4]! * 0.25) + random[0]!);
-          const stretch = 0.014 + 0.026 * (0.5 + 0.5 * Math.sin(t * 5 + random[2]! * Math.PI * 2));
-          const tailFraction = [1, 0.45, 0.45, 0][tail]!;
-          // Clamp at the source so recycling never draws across the whole flow.
-          const p = Math.max(0, head - stretch * tailFraction);
+          // Long, overlapping wisps blend into a continuous current.
+          // Shared, slow breathing gives the flow coherence instead of a swarm.
+          const stretch = 0.20 + 0.09 * (0.5 + 0.5 * Math.sin(t * 2.2 + random[2]! * 2));
+          const head = fract(t / (0.7 + random[4]! * 0.25) + random[0]!) * 1.3;
+          const p = Math.max(0, Math.min(1, head - stretch * trailFractions[tail]!));
           let x = 0, y = 0, z = 0;
           if (stage === 0) {
             const side = i % 4;
