@@ -1,28 +1,54 @@
-# Form in motion — showcase 01
+# Starter showcase — El calor del aire, en tu agua
 
-The default view is a live, 24-second Three.js film. It is not an encoded MP4 or WebM. It starts automatically unless the viewer requests reduced motion. Play/pause, restart and timeline scrubbing remain available. Select **Inspect model** for manual orbit controls and the original eight-second turntable, or open `/?mode=studio` directly.
+This is the accepted starter presentation for Biotérmica: a live, looping 24-second Three.js sequence, not an encoded video. Its stable catalog ID is `form-in-motion`; the model is `heat-pump-v1`. Keep IDs stable when changing display names so saved links continue to resolve.
 
-## Creative direction
+## Final direction
 
-An unbranded product study: charcoal metal, teal opening, violet overhead view, warm copper-coloured backdrop for the details, then a cool closing hero angle. Environment reflections and moving key lighting make the curved metal readable. A soft procedural contact-shadow plane grounds the feet; it is presentation shading, not a physical simulation. Editorial captions are HTML overlays, separate from the product geometry. The fan rotates slowly for presentation, not at an asserted operating speed.
+Use the shared Biotérmica emblem, wordmark, Spanish captions and blue/aqua identity. The stage uses muted deep blue-green backgrounds with a restrained warmer variation for hot water. White headings and pale cyan accents sit directly on the scene: **no background cards behind the logo or captions**. The floor is darkened independently to counter the studio lights. Keep the charcoal cabinet well lit and the PVC and flow highlights visible. See [BRAND.md](BRAND.md) for the shared palette.
 
-| Time | Movement |
+Preserve the four-step reveal / overhead / socket-detail / return choreography. Product rotation, camera movement, fan rotation, light movement and flow are all driven by absolute time. The fan speed is chosen for presentation, not an asserted operating speed.
+
+| Time | Process and flow | Camera direction |
+| --- | --- | --- |
+| 0–6 s | Warm amber air enters the side grilles | Approach and small product turn |
+| 6–12 s | Icy cyan air leaves upward through the fan | Overhead fan detail |
+| 12–18 s | Hot water leaves the lower-X PVC socket | Descend to and hold the service pocket |
+| 18–24 s | Cold water enters the higher-X PVC socket | Stay near the sockets, then return to opening pose |
+
+Camera keys are at 0, 5, 8, 11, 14, 18, 21 and 24 seconds; chapter boundaries are at 0, 6, 12 and 18 seconds. They deliberately differ so camera moves lead into the process views. The last camera/color key matches the first. Quintic easing creates soft starts and stops between keys.
+
+## Flow implementation and model contract
+
+`src/animations/heat-flow.ts` attaches `showcase-heat-flow` to the model's `cabinet` group. It expects two direct children named `pvc-water-socket`, sorts them by local X, and reads their positions with a +0.065 m local Z offset to reach the openings. `createShowcase` also expects a `fan-rotor` node. These assumptions are specific to the current heat pump; do not apply this sequence to another model without adapting its attachment points.
+
+- Air: two `Points` systems, 360 streams each with four-point trails (1,440 rendered points per stage), size 0.018, shared soft sprite, warm amber / icy cyan colors. Keep the fine, dense appearance.
+- Water: separate translucent `TubeGeometry` surfaces with physical materials and 70 instanced moving droplets per port. Do not reuse air sprites for water.
+- Hot water travels outward along a 0.36 m path that drops 0.075 m. Cold water travels inward along a straight level path. Avoid upward water arcs.
+- Only the active stage is visible; effects fade at its boundaries. Deterministic seeds and absolute time make arbitrary seeking repeatable.
+- Inlet/outlet assignment and flow colors are explanatory, pending engineering confirmation. This is not a thermal or fluid simulation.
+- Inspection mode has no flow effects. Meshes, points, materials and the sprite are disposed with the viewer.
+
+## Where to edit
+
+| Concern | File |
 | --- | --- |
-| 0–6 s | Slow approach and a small product turn |
-| 6–11 s | Rise above the top-mounted fan |
-| 11–16 s | Descend toward the corner cover and PVC sockets |
-| 16–20 s | Pull back into the complete product view |
-| 20–24 s | Return to the opening pose and palette |
+| Camera keys, product yaw, lighting and backdrop | `src/animations/showcase.ts` |
+| Air/water visuals, paths and six-second stages | `src/animations/heat-flow.ts` |
+| Shared 3D brand palette | `src/brand/theme.ts` |
+| Registration, chapter copy, model ownership | `src/library/catalog.ts` |
+| Floor, fog, lights and contact shadow | `src/scenes/studio.ts` |
+| Renderer, environment, controls and rendering API | `src/core/viewer.ts` |
+| Playback, chapter index, selection lifecycle | `src/main.ts` |
+| Shared logo and caption layout | `index.html`, `src/style.css` |
 
-## Editing
+The current water chapters (zero-based indices 2 and 3) place captions higher to keep the flow paths clear. This is a shared CSS assumption today; introduce explicit layout metadata when another showcase needs different chapter placement. Similarly, the flow module currently hard-codes 24 seconds and four equal stages. Update camera timing, flow timing, catalog duration and captions together if changing the sequence length.
 
-- `src/animations/showcase.ts`: timestamped camera positions, look targets, product yaw, background and accent colours. Quintic easing joins each pose with zero endpoint velocity/acceleration. It is a deliberate stop-and-go dolly sequence, not a constant-speed camera spline.
-- `src/scenes/studio.ts`: physical scene, floor, fog, key/fill/rim lights.
-- `src/core/viewer.ts`: renderer and environment, mode changes, inspection controls and `renderAt(seconds)`.
-- `src/library/catalog.ts`: showcase registration, captions and model ownership.
-- `src/main.ts`: selection, playback and mode buttons. No business claims or company identity are baked into the model.
-- `src/style.css`: film typography and responsive overlay. Change it independently from lighting and camera choreography.
+## Playback and verification
 
-Every frame is sampled from absolute time, including the rotor and lighting. No random motion or accumulated rotations. Loop duration is 24 seconds, and the last key matches the first. Tests verify out-of-order seeking and loop repeatability. Manual orbit is disabled only in showcase mode so it cannot fight the camera sequence.
+Use **Biblioteca** to select content, **Inspeccionar** for manual orbit/zoom, and **Presentación** for the scripted camera. Showcase playback starts automatically except with reduced motion. Opening the library or hiding the tab pauses playback; the user can resume. Timeline scrubbing samples the requested time directly.
 
-For video export later, fix renderer size, pixel ratio and frame rate, sample `frame / fps`, and encode frames. The current HTML overlay would need to be included through page capture or composited separately; canvas capture alone excludes it. Real-time capture is not yet implemented.
+Run `bun run build` and `bun test` after sequence changes. Tests cover deterministic seeking, stage selection, water direction, camera/product/light repeatability and catalog compatibility. In the browser, scrub to 3, 9, 15 and 21 seconds, then seek backward and across 24 → 0. Check readable captions, visible fine air, distinct water, correct port attachment, no rising outlet and no close-up overlap. Also inspect a narrow viewport and switch between model, animation and showcase.
+
+## Future video export
+
+`viewer.renderAt(seconds)` provides the absolute-time render entry point. Fix output size, pixel ratio, frame rate and asset readiness, sample `frameIndex / fps`, then encode frames. HTML logo/captions/controls are outside the WebGL canvas: include a deliberate overlay composition or page-capture strategy. No MP4/WebM exporter, capture UI or encoding pipeline exists yet. Repeatable scene poses do not guarantee pixel-identical results across GPUs/browsers.

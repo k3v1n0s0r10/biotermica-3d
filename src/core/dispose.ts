@@ -1,4 +1,4 @@
-import { Mesh, Texture, type Object3D, type Material, type BufferGeometry } from 'three';
+import { Mesh, Points, Texture, type Object3D, type Material, type BufferGeometry } from 'three';
 
 /** Dispose exclusively owned assets; shared assets must remain alive until unused. */
 export function disposeObject(root: Object3D) {
@@ -6,7 +6,7 @@ export function disposeObject(root: Object3D) {
   const materials = new Set<Material>();
   const textures = new Set<Texture>();
   root.traverse(object => {
-    if (!(object instanceof Mesh)) return;
+    if (!(object instanceof Mesh) && !(object instanceof Points)) return;
     geometries.add(object.geometry);
     for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
       materials.add(material);

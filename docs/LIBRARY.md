@@ -1,14 +1,14 @@
 # Product library
 
-Open **Library** in the top navigation. The menu separates:
+Open **Biblioteca** in the top navigation. The menu separates:
 
-- **Models**: physical product assemblies to inspect.
-- **Showcases**: complete presentations, each tied to one model and its camera/lighting sequence.
-- **Animations**: reusable motions, with an explicit list of compatible model IDs.
+- **Modelos**: physical product assemblies to inspect.
+- **Presentaciones**: complete presentations, each tied to one model and its camera/lighting sequence.
+- **Animaciones**: reusable motions, with an explicit list of compatible model IDs.
 
-Search filters the active collection. Opening a model enters inspection mode. Opening a showcase plays its film. Opening an animation runs it on the selected model when compatible, otherwise on its first compatible model. Reduced-motion users remain paused. Opening the menu pauses playback; close it and press Play to continue.
+Search filters the active collection. Opening a model enters inspection mode. Opening a showcase plays its film. Opening an animation runs it on the selected model when compatible, otherwise on its first compatible model. Reduced-motion users remain paused. Opening the menu pauses playback; close it and press Reproducir to continue.
 
-The active model and experience appear beside the Library button. URL parameters (`mode`, `model`, `animation`, `showcase`) preserve selection when reloading or copying a local preview link. Invalid or stale IDs fall back to valid entries. The library does not upload, create or edit assets; new entries are registered in code.
+The active model and experience appear beside the Biblioteca button. URL parameters (`mode`, `model`, `animation`, `showcase`) preserve selection when reloading or copying a local preview link. Invalid or stale IDs fall back to valid entries. The library does not upload, create or edit assets; new entries are registered in code.
 
 ## Add content
 

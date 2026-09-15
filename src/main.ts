@@ -26,6 +26,7 @@ let resumeOnVisible = false;
 const draw = () => {
   if (!viewer) return;
   const index = viewer.renderAt(seconds);
+  document.body.dataset.chapter = String(index);
   const film = showcases.find(entry => entry.id === selection.showcaseId)!;
   if (lastChapter !== index) {
     const copy = film.chapters[index];
@@ -43,10 +44,10 @@ const tick = (now: number) => {
   seconds = loopTime((now - startedAt) / 1000, viewer.duration);
   draw(); frame = requestAnimationFrame(tick);
 };
-const pause = () => { playing = false; cancelAnimationFrame(frame); play.textContent = 'Play'; };
+const pause = () => { playing = false; cancelAnimationFrame(frame); play.textContent = 'Reproducir'; };
 const start = () => {
   if (playing || !viewer) return;
-  playing = true; play.textContent = 'Pause';
+  playing = true; play.textContent = 'Pausar';
   startedAt = performance.now() - seconds * 1000;
   frame = requestAnimationFrame(tick);
 };
@@ -74,9 +75,9 @@ function select(input: Partial<Selection>, autoplay = false) {
     document.querySelector('#film-name')!.textContent = film.name.toUpperCase();
     document.querySelector('#film-edition-name')!.textContent = film.edition.toUpperCase();
     document.querySelector('#chapter-total')!.textContent = String(film.chapters.length).padStart(2, '0');
-    hint.textContent = selection.mode === 'showcase' ? `${viewer.duration}-second film · Drag timeline to explore` : 'Drag to orbit · Scroll to zoom';
+    hint.textContent = selection.mode === 'showcase' ? `${viewer.duration} s · Explora la secuencia` : 'Arrastra para girar · Desplaza para acercar';
     reset.setAttribute('aria-label', selection.mode === 'showcase' ? 'Restart animation' : 'Reset view');
-    document.title = `${model.name} — ${selection.mode === 'showcase' ? film.name : 'Inspect'}`;
+    document.title = `Biotérmica · ${model.name} — ${selection.mode === 'showcase' ? film.name : 'Inspect'}`;
     const url = new URL(location.href);
     for (const [key, value] of Object.entries({ mode: selection.mode, model: model.id, animation: selection.animationId, showcase: film.id })) url.searchParams.set(key, value);
     history.replaceState(null, '', url);

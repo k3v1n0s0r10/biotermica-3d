@@ -21,27 +21,27 @@ export interface ShowcaseEntry {
   create(stage: ReturnType<typeof createStudio>, camera: PerspectiveCamera): { duration: number; sample(seconds: number): number };
 }
 export const models: ModelEntry[] = [{
-  id: 'heat-pump-v1', name: 'Heat pump', version: 'V1 · Exterior',
-  description: 'Charcoal cabinet, curved panels and PVC water connections. The base for our future internal assemblies.',
+  id: 'heat-pump-v1', name: 'Bomba de calor', version: 'V1 · Exterior',
+  description: 'Gabinete de color grafito, paneles curvos y conexiones de agua en PVC. La base para futuros componentes internos.',
   create: createHeatPump, camera: [2.35, 1.85, 2.65], target: [0, 0.55, 0],
 }];
 export const animations: AnimationEntry[] = [
-  { id: 'turntable', name: 'Full turntable', description: 'An eight-second rotation for inspecting the complete exterior.', duration: 8, modelIds: ['heat-pump-v1'], create: createTurntable },
-  { id: 'fan-study', name: 'Fan motion', description: 'Keep the cabinet still and explore the five-blade rotor in motion.', duration: 6, modelIds: ['heat-pump-v1'], create(model) {
+  { id: 'turntable', name: 'Vista de 360°', description: 'Un giro de ocho segundos para explorar todo el exterior.', duration: 8, modelIds: ['heat-pump-v1'], create: createTurntable },
+  { id: 'fan-study', name: 'Movimiento del ventilador', description: 'Explora el rotor de cinco aspas en movimiento con el gabinete quieto.', duration: 6, modelIds: ['heat-pump-v1'], create(model) {
     const fan = model.getObjectByName('fan-rotor');
     if (!fan) throw new Error('Fan motion requires a fan-rotor group.');
     return { duration: 6, sample(seconds) { model.rotation.y = 0; fan.rotation.y = loopTime(seconds, 6) / 6 * Math.PI * 2; } };
   } },
 ];
 export const showcases: ShowcaseEntry[] = [{
-  id: 'form-in-motion', name: 'Form in motion', edition: 'Charcoal edition',
-  description: 'A cinematic study in teal, violet and warm light. Four camera movements, one complete product.',
+  id: 'form-in-motion', name: 'El calor del aire, en tu agua', edition: 'Tecnología para disfrutar',
+  description: 'Descubre cómo aprovechamos el calor del aire para calentar tu agua en cuatro pasos.',
   duration: 24, modelId: 'heat-pump-v1', create: createShowcase,
   chapters: [
-    ['THE REVEAL', 'A new\nperspective.', 'A study in form, detail and movement.'],
-    ['FROM ABOVE', 'Every angle.\nConsidered.', 'The fan, the guard, the geometry.'],
-    ['THE DETAILS', 'Closer to\nthe details.', 'Curved panels. Clean lines. Water connections.'],
-    ['THE COMPLETE FORM', 'Made of\npossibilities.', 'One shell. The beginning of a bigger system.'],
+    ['CAPTAMOS EL CALOR', 'El calor empieza\nen el aire.', 'El aire entra por los paneles laterales.'],
+    ['APROVECHAMOS SU ENERGÍA', 'Su calor se queda.\nEl aire frío sale.', 'El ventilador expulsa el aire después de ceder calor.'],
+    ['AGUA MÁS CÁLIDA', 'Más calidez.\nMás momentos.', 'El agua caliente sale hacia tu piscina o espacio de bienestar.'],
+    ['EL CICLO CONTINÚA', 'Tu agua vuelve.\nEl bienestar sigue.', 'El agua fría entra para volver a calentarse.'],
   ],
 }];
 export interface Selection { mode: 'showcase' | 'studio'; modelId: string; animationId: string; showcaseId: string }

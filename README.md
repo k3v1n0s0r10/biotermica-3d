@@ -1,4 +1,4 @@
-# Heat pump product studio
+# Biotérmica product studio
 
 Bun + TypeScript + Vite + Three.js workspace for product models and repeatable showcase animations.
 
@@ -9,8 +9,10 @@ bun install --frozen-lockfile
 bun run dev
 ```
 
-Open the local URL printed by Vite. The default view plays a 24-second cinematic showcase with animated camera angles, lighting, colours and fan motion. Use **Inspect model** for manual orbit/zoom and the eight-second turntable. Both modes support playback and scrubbing. Reduced-motion users start paused.
+Open the local URL printed by Vite. The default view plays a 24-second cinematic showcase with animated camera angles, lighting, colours and fan motion. Use **Inspeccionar** for manual orbit/zoom and the eight-second turntable. Both modes support playback and scrubbing. Reduced-motion users start paused.
 
+- [Continuation checklist and extension boundaries](docs/CONTINUING.md)
+- [Biotérmica brand guidelines](docs/BRAND.md)
 - [Library menus and adding new entries](docs/LIBRARY.md)
 - [Model guide and accepted design decisions](docs/MODEL-GUIDE.md)
 - [Showcase direction and animation editing](docs/SHOWCASE.md)
@@ -31,6 +33,8 @@ Production files are written to `dist/`. Bun manages dependencies and runs tooli
 ```text
 src/
   main.ts              Selection and playback lifecycle
+  brand/
+    theme.ts           Shared company and showcase palette
   library/
     catalog.ts         Models, animations, showcases and compatibility
     menu.ts            Searchable library interface
@@ -46,8 +50,10 @@ src/
   animations/
     turntable.ts       Absolute-time sequence interface and inspection loop
     showcase.ts        Reproducible cinematic camera, colour and product animation
+    heat-flow.ts       Four-stage air and water effects
   style.css
 public/
+  brand/               Official Biotérmica emblem
   models/              Product GLB/glTF assets, grouped by product
   textures/            Shared texture maps
   environments/        HDR/EXR lighting assets for future scenes

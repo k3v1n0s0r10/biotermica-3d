@@ -15,8 +15,8 @@ export function createLibrary(onSelect: (selection: Partial<Selection>) => void)
     cards.replaceChildren();
     const entries = category === 'models' ? models : category === 'showcases' ? showcases : animations;
     const matches = entries.filter(entry => `${entry.name} ${entry.description}`.toLowerCase().includes(search.value.toLowerCase()));
-    title.textContent = category[0]!.toUpperCase() + category.slice(1);
-    count.textContent = `${matches.length} ${matches.length === 1 ? 'item' : 'items'}`;
+    title.textContent = ({ models: 'Modelos', showcases: 'Presentaciones', animations: 'Animaciones' })[category];
+    count.textContent = `${matches.length} ${matches.length === 1 ? 'elemento' : 'elementos'}`;
     tabs.forEach(tab => tab.setAttribute('aria-pressed', String(tab.dataset.category === category)));
     for (const entry of matches) {
       const card = document.createElement('button');
@@ -26,10 +26,10 @@ export function createLibrary(onSelect: (selection: Partial<Selection>) => void)
       const artwork = document.createElement('span'); artwork.className = `card-art ${category}`;
       artwork.setAttribute('aria-hidden', 'true'); artwork.textContent = category === 'models' ? '▧' : category === 'showcases' ? '▷' : '↻';
       const meta = document.createElement('span'); meta.className = 'card-meta';
-      meta.textContent = category === 'models' ? models.find(model => model.id === entry.id)!.version : `${'duration' in entry ? entry.duration : ''} seconds · ${category === 'showcases' ? 'Film' : 'Motion study'}`;
+      meta.textContent = category === 'models' ? models.find(model => model.id === entry.id)!.version : `${'duration' in entry ? entry.duration : ''} s · ${category === 'showcases' ? 'Presentación' : 'Estudio de movimiento'}`;
       const heading = document.createElement('strong'); heading.textContent = entry.name;
       const description = document.createElement('span'); description.className = 'card-description'; description.textContent = entry.description;
-      const action = document.createElement('span'); action.className = 'card-action'; action.textContent = category === 'models' ? 'Inspect model ↗' : category === 'showcases' ? 'Play showcase ↗' : 'Run animation ↗';
+      const action = document.createElement('span'); action.className = 'card-action'; action.textContent = category === 'models' ? 'Inspeccionar modelo ↗' : category === 'showcases' ? 'Ver presentación ↗' : 'Reproducir animación ↗';
       card.append(artwork, meta, heading, description, action);
       card.addEventListener('click', () => {
         dialog.close();
@@ -43,7 +43,7 @@ export function createLibrary(onSelect: (selection: Partial<Selection>) => void)
       cards.append(card);
     }
     if (!matches.length) {
-      const empty = document.createElement('p'); empty.className = 'library-empty'; empty.textContent = 'No matches. Try a different search.'; cards.append(empty);
+      const empty = document.createElement('p'); empty.className = 'library-empty'; empty.textContent = 'Sin resultados. Prueba otra búsqueda.'; cards.append(empty);
     }
   }
   tabs.forEach(tab => tab.addEventListener('click', () => { category = tab.dataset.category as Category; search.value = ''; render(); }, { signal: events.signal }));

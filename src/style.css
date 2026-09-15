@@ -91,3 +91,51 @@ output { font-variant-numeric: tabular-nums; white-space: nowrap; font-size: 10p
  .library-content { padding: 16px; }
  #library-cards { grid-template-columns: 1fr; }
 }
+/* Shared Biotérmica identity: every showcase uses this shell. */
+:root { --brand-navy: #073c52; --brand-blue: #009ecb; --brand-deep-blue: #007c9f; --brand-orange: #b94700; --brand-mist: #eaf7fb; font-family: 'Avenir Next', Avenir, 'Segoe UI', sans-serif; color: var(--brand-navy); }
+.showcase .film-overlay { color: #f5fbfd; background: none; }
+.film-brand { gap: 10px; letter-spacing: normal; top: 76px; align-items: center; }
+.film-brand img { width: 35px; height: 56px; object-fit: contain; }
+.film-brand strong { display: block; font-family: Georgia, serif; font-size: 24px; letter-spacing: .065em; line-height: 1.3; color: var(--brand-navy); }
+.film-brand small { display: block; font-size: 6px; font-weight: 600; letter-spacing: .16em; color: var(--brand-navy); }
+.film-edition, .film-edition span { color: var(--brand-deep-blue); }
+.film-edition { top: 85px; }
+#chapter { color: var(--brand-deep-blue); font-weight: 650; }
+.film-copy h1 { font-size: clamp(30px, 4.6vw, 60px); font-weight: 650; letter-spacing: -.055em; line-height: 1.05; }
+.film-copy p { color: #305a6c; max-width: 350px; line-height: 1.6; }
+.index-line { background: #007c9f55; }
+.showcase .workspace-bar { color: var(--brand-navy); }
+.workspace-bar button, .showcase .workspace-bar button { background: #ffffffdd; border-color: #a0cbd9; color: var(--brand-navy); border-radius: 24px; }
+.showcase footer { color: var(--brand-navy); background: #ffffffed; border-color: #cde5ed; }
+button { border-radius: 20px; }
+.showcase button { border-color: #afd2df; }
+button[aria-pressed='true'], .showcase button[aria-pressed='true'] { background: var(--brand-deep-blue); color: white; }
+#play { background: var(--brand-orange); color: white; border-color: var(--brand-orange); }
+input { accent-color: var(--brand-blue); }
+#hint { color: #487487; }
+:focus-visible { outline-color: var(--brand-blue); }
+#library-dialog { color: var(--brand-navy); border-color: #bedfe9; background: #f7fcfd; }
+.library-heading { border-color: #d8ebf1; }
+.library-eyebrow, #library-count, .card-meta { color: #487487; }
+.library-nav { background: #edf8fb; border-color: #d8ebf1; }
+.library-nav button { color: var(--brand-navy); }
+.library-nav button[aria-pressed='true'] { background: var(--brand-deep-blue); }
+.library-nav p, .card-description, .library-empty { color: #487487; }
+#library-dialog .library-card { color: var(--brand-navy); border-color: #d0e5ec; }
+#library-dialog .library-card[aria-pressed='true'] { border-color: var(--brand-blue); box-shadow: 0 0 0 1px var(--brand-blue); }
+.card-art, .card-art.animations { background: linear-gradient(135deg, #e5f7fc, #77cbdf); color: var(--brand-deep-blue); }
+.card-art.showcases { background: linear-gradient(135deg, #d9f4fb, #bee7db); color: var(--brand-navy); }
+.card-action { color: var(--brand-orange); }
+@media (max-width: 600px) { .film-brand strong { font-size: 20px; } .film-brand img { height: 45px; width: 28px; } .film-copy h1 { font-size: 32px; } }
+.film-brand { padding: 0; background: none; }
+.showcase[data-chapter='2'] .film-copy, .showcase[data-chapter='3'] .film-copy { bottom: auto; top: 185px; max-width: 315px; }
+.showcase[data-chapter='2'] .film-copy h1, .showcase[data-chapter='3'] .film-copy h1 { font-size: clamp(30px, 4vw, 48px); }
+@media (max-width: 600px) { .showcase[data-chapter='2'] .film-copy, .showcase[data-chapter='3'] .film-copy { top: 155px; max-width: 210px; } }
+
+
+/* Light brand lockup and copy sit directly on the deeper studio backdrop. */
+.showcase .film-brand strong, .showcase .film-brand small { color: #f5fbfd; }
+.showcase .film-copy p { color: #e1f1f6; }
+.showcase #chapter, .showcase .film-edition, .showcase .film-edition span { color: #a2e3f3; }
+.showcase .workspace-bar { color: #e1f1f6; }
+.showcase .index-line { background: #a2e3f388; }
