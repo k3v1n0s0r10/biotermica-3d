@@ -1,4 +1,4 @@
-import { NormalBlending, CatmullRomCurve3, InstancedMesh, Mesh, MeshPhysicalMaterial, Object3D, SphereGeometry, TubeGeometry, BufferGeometry, Color, DataTexture, Float32BufferAttribute, Group, LinearFilter, Points, PointsMaterial, Vector3 } from 'three';
+import { NormalBlending, CatmullRomCurve3, Mesh, MeshPhysicalMaterial, Object3D, TubeGeometry, BufferGeometry, Color, Float32BufferAttribute, Group, LineSegments, LineBasicMaterial, Vector3 } from 'three';
 import { loopTime } from './turntable';
 
 const fract = (value: number) => value - Math.floor(value);
@@ -14,87 +14,90 @@ export function createHeatFlow(product: Object3D) {
   if (sockets.length < 2) throw new Error('Heat flow requires two PVC water sockets.');
   const ports = sockets.map(socket => socket.position.clone().add(new Vector3(0, 0, 0.065)));
   const root = new Group(); root.name = 'showcase-heat-flow'; cabinet.add(root);
-  const pixels = new Uint8Array(32 * 32 * 4);
-  for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) {
-    const r = Math.hypot((x - 15.5) / 15.5, (y - 15.5) / 15.5);
-    const offset = (y * 32 + x) * 4;
-    pixels[offset] = pixels[offset + 1] = pixels[offset + 2] = 255;
-    pixels[offset + 3] = Math.round(Math.pow(Math.max(0, 1 - r), 0.55) * 255);
-  }
-  const sprite = new DataTexture(pixels, 32, 32);
-  sprite.minFilter = sprite.magFilter = LinearFilter; sprite.needsUpdate = true;
   const trailLength = 4;
   const systems = [0xffca83, 0x86ddfa].map((tint, stage) => {
-    const count = 360;
+    const count = 36_000;
+    const seeds = Array.from({ length: count }, (_, i) => Array.from({ length: 5 }, (_, salt) => seed(i, salt + 1)));
     const positions = new Float32Array(count * trailLength * 3);
     const colors = new Float32Array(positions.length);
     const color = new Color(tint);
     for (let i = 0; i < count; i++) for (let tail = 0; tail < trailLength; tail++) {
       const offset = (i * trailLength + tail) * 3;
-      const intensity = 1 - tail / trailLength;
+      const intensity = [0.12, 0.7, 0.7, 1][tail]!;
       colors[offset] = color.r * intensity; colors[offset + 1] = color.g * intensity; colors[offset + 2] = color.b * intensity;
     }
     const geometry = new BufferGeometry();
     geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
     geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
-    const material = new PointsMaterial({ size: 0.018, map: sprite, vertexColors: true, transparent: true, opacity: 0, depthWrite: false, blending: NormalBlending, toneMapped: false });
-    const points = new Points(geometry, material); points.frustumCulled = false;
+    const material = new LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0, depthWrite: false, blending: NormalBlending, toneMapped: false });
+    const points = new LineSegments(geometry, material); points.frustumCulled = false;
     points.name = ['warm-air-intake', 'cold-air-exhaust', 'hot-water-outlet', 'cold-water-inlet'][stage]!;
     root.add(points);
-    return { points, count, stage };
+    return { points, count, stage, seeds };
   });
-  // Water is a continuous rounded liquid surface with travelling beads, not point sprites.
+  // A refractive, continuous liquid jet. Surface waves travel with the flow.
   const water = [2, 3].map(stage => {
     const group = new Group();
     group.name = stage === 2 ? 'hot-water-outlet' : 'cold-water-inlet';
     root.add(group);
     const port = ports[stage === 2 ? 0 : 1]!;
-    const path = new CatmullRomCurve3(Array.from({ length: 17 }, (_, i) => {
-      const d = i / 16;
-      return new Vector3(port.x, port.y - (stage === 2 ? 0.075 * d * d : 0), port.z + d * 0.36);
+    const path = new CatmullRomCurve3(Array.from({ length: 33 }, (_, i) => {
+      const d = i / 32;
+      return new Vector3(port.x, port.y - (stage === 2 ? 0.10 : 0.025) * d * d, port.z + d * 0.36);
     }));
     const material = new MeshPhysicalMaterial({
-      color: stage === 2 ? 0xa6dce7 : 0x42b9dc, metalness: 0,
-      roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.08,
+      color: stage === 2 ? 0xffe5bd : 0xd4f5ff,
+      metalness: 0, roughness: 0.055, transmission: 0.88,
+      thickness: 0.028, ior: 1.333,
+      attenuationColor: new Color(stage === 2 ? 0xffbe70 : 0x70d4ee),
+      attenuationDistance: 0.16, envMapIntensity: 1.4,
+      clearcoat: 0.35, clearcoatRoughness: 0.035,
       transparent: true, opacity: 0, depthWrite: false,
-      emissive: stage === 2 ? 0xb94700 : 0x006f99, emissiveIntensity: 0.12,
     });
-    const stream = new Mesh(new TubeGeometry(path, 72, 0.0135, 12, false), material);
-    stream.name = 'water-surface'; group.add(stream);
-    const beadMaterial = new MeshPhysicalMaterial({
-      color: stage === 2 ? 0xffbf76 : 0xb0efff, roughness: 0.06, metalness: 0,
-      clearcoat: 1, transparent: true, opacity: 0, depthWrite: false,
-    });
-    const beads = new InstancedMesh(new SphereGeometry(1, 8, 6), beadMaterial, 70);
-    beads.name = 'moving-water-droplets'; beads.frustumCulled = false; group.add(beads);
-    return { stage, group, path, material, beadMaterial, beads };
+    const geometry = new TubeGeometry(path, 128, 0.014, 24, false);
+    const rest = Float32Array.from(geometry.getAttribute('position').array);
+    const centers = Array.from({ length: 129 }, (_, i) => path.getPointAt(i / 128));
+    const stream = new Mesh(geometry, material);
+    stream.name = 'water-surface'; stream.frustumCulled = false; group.add(stream);
+    return { stage, group, material, geometry, rest, centers };
   });
-  const dummy = new Object3D();
-  const point = new Vector3();
   return {
     root,
     sample(seconds: number) {
       const t = loopTime(seconds, 24), active = flowStageAt(t);
       const local = t - active * 6;
-      for (const { points, count, stage } of systems) {
+      for (const { points, count, stage, seeds } of systems) {
         points.visible = stage === active;
-        points.material.opacity = stage === active ? 0.95 * smooth(local / 0.4) * smooth((6 - local) / 0.45) : 0;
+        points.material.opacity = stage === active ? 0.28 * smooth(local / 0.4) * smooth((6 - local) / 0.45) : 0;
+        if (!points.visible) continue;
         const position = points.geometry.getAttribute('position');
         for (let i = 0; i < count; i++) for (let tail = 0; tail < trailLength; tail++) {
-          const p = fract(t / (stage < 2 ? 2.4 : 1.8) + seed(i, 1) - tail * 0.014);
+          const random = seeds[i]!;
+          // Two connected segments form one fine streak, with a tapered tail.
+          // Vary its length smoothly as the air stretches and compresses.
+          const head = fract(t / (0.7 + random[4]! * 0.25) + random[0]!);
+          const stretch = 0.014 + 0.026 * (0.5 + 0.5 * Math.sin(t * 5 + random[2]! * Math.PI * 2));
+          const tailFraction = [1, 0.45, 0.45, 0][tail]!;
+          // Clamp at the source so recycling never draws across the whole flow.
+          const p = Math.max(0, head - stretch * tailFraction);
           let x = 0, y = 0, z = 0;
           if (stage === 0) {
             const side = i % 4;
-            const lateral = -0.35 + seed(i, 2) * 0.51;
-            const distance = 1.05 - p * 0.62;
-            y = 0.24 + seed(i, 3) * 0.7 + Math.sin(p * Math.PI) * 0.045;
+            // Accelerate and converge smoothly toward the side grilles.
+            // Broad ambient air contracts into the intake, without oscillation.
+            const pull = 0.35 * p + 0.65 * p * p;
+            const spread = 1.65 - 0.65 * pull;
+            const lateral = -0.095 + (random[1]! - 0.5) * 0.51 * spread;
+            const distance = 1.05 - pull * 0.62;
+            const intakeHeight = 0.24 + random[2]! * 0.7;
+            y = intakeHeight + (intakeHeight - 0.59) * 0.4 * (1 - pull);
             if (side === 0) { x = lateral; z = distance; }
             if (side === 1) { x = distance; z = lateral; }
             if (side === 2) { x = lateral; z = -distance; }
             if (side === 3) { x = -distance; z = lateral; }
           } else if (stage === 1) {
-            const angle = seed(i, 4) * Math.PI * 2 + p * 0.7;
-            const radius = 0.08 + Math.sqrt(seed(i, 5)) * 0.23 + p * 0.12;
+            const angle = random[3]! * Math.PI * 2 + p * 0.7;
+            const radius = 0.08 + Math.sqrt(random[4]!) * 0.23 + p * 0.12;
             x = Math.cos(angle) * radius; z = Math.sin(angle) * radius;
             y = 1.10 + p * 0.85;
           }
@@ -102,25 +105,33 @@ export function createHeatFlow(product: Object3D) {
         }
         position.needsUpdate = true;
       }
-      for (const { stage, group, path, material, beadMaterial, beads } of water) {
+      for (const { stage, group, material, geometry, rest, centers } of water) {
         group.visible = stage === active;
         const fade = stage === active ? smooth(local / 0.4) * smooth((6 - local) / 0.45) : 0;
-        material.opacity = fade * 0.65;
-        beadMaterial.opacity = fade * 0.8;
-        for (let i = 0; i < beads.count; i++) {
-          const p = fract(t / 1.7 + seed(i, 1));
-          const d = stage === 2 ? p : 1 - p;
-          path.getPoint(d, point);
-          const angle = seed(i, 6) * Math.PI * 2 + d * 2;
-          const radius = 0.009 * Math.sqrt(seed(i, 7));
-          dummy.position.copy(point);
-          dummy.position.x += Math.cos(angle) * radius;
-          dummy.position.y += Math.sin(angle) * radius;
-          const size = 0.0012 + seed(i, 8) * 0.0012;
-          dummy.scale.set(size, size, size * 2.8);
-          dummy.updateMatrix(); beads.setMatrixAt(i, dummy.matrix);
+        material.opacity = fade;
+        if (!group.visible) continue;
+        const positions = geometry.getAttribute('position');
+        const direction = stage === 2 ? 1 : -1;
+        for (let ring = 0; ring <= 128; ring++) {
+          const d = ring / 128;
+          const center = centers[ring]!;
+          const phase = d * 32 - t * 9 * direction;
+          // Keep the socket connection fixed; let the free stream narrow and ripple.
+          const envelope = smooth(d * 12);
+          for (let j = 0; j <= 24; j++) {
+            const angle = j / 24 * Math.PI * 2;
+            const swell = 1 - d * 0.10 + envelope * (
+              0.045 * Math.sin(phase + Math.sin(angle * 2) * 0.7)
+              + 0.018 * Math.sin(phase * 1.9 - angle * 3));
+            const i = ring * 25 + j, offset = i * 3;
+            positions.setXYZ(i,
+              center.x + (rest[offset]! - center.x) * swell,
+              center.y + (rest[offset + 1]! - center.y) * swell,
+              center.z + (rest[offset + 2]! - center.z) * swell);
+          }
         }
-        beads.instanceMatrix.needsUpdate = true;
+        positions.needsUpdate = true;
+        geometry.computeVertexNormals();
       }
       return active;
     },

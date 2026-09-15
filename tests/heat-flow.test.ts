@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test';
-import { InstancedMesh, Matrix4, Points, Vector3 } from 'three';
+import { Mesh, LineSegments } from 'three';
 import { createHeatPump } from '../src/models/heat-pump';
 import { createHeatFlow } from '../src/animations/heat-flow';
 import { disposeObject } from '../src/core/dispose';
@@ -11,27 +11,22 @@ test('air is fine and dense; water uses distinct liquid meshes with repeatable m
     expect(flow.sample(time)).toBe(stage);
     expect(flow.root.children.filter(system => system.visible)).toEqual([flow.root.children[stage]!]);
     const system = flow.root.children[stage]!;
-    if (system instanceof Points) {
-      expect(system.material.size).toBeLessThan(0.02);
+    if (system instanceof LineSegments) {
       expect(system.geometry.getAttribute('position').count).toBeGreaterThan(1000);
     } else expect(system.getObjectByName('water-surface')).toBeDefined();
   }
-  const matrix = new Matrix4(), point = new Vector3();
-  for (const [time, stage, sign] of [[15, 2, 1], [20, 3, -1]] as const) {
-    const beads = flow.root.children[stage]!.getObjectByName('moving-water-droplets') as InstancedMesh;
+  for (const [time, stage] of [[15, 2], [20, 3]] as const) {
+    const stream = flow.root.children[stage]!.getObjectByName('water-surface') as Mesh;
     flow.sample(time);
-    const expected = Array.from(beads.instanceMatrix.array);
-    const before = Array.from({ length: beads.count }, (_, i) => { beads.getMatrixAt(i, matrix); return point.setFromMatrixPosition(matrix).z; });
-    flow.sample(time + 0.001);
-    const forward = before.filter((z, i) => { beads.getMatrixAt(i, matrix); return (point.setFromMatrixPosition(matrix).z - z) * sign > 0; }).length;
-    expect(forward).toBeGreaterThan(65);
+    const positions = stream.geometry.getAttribute('position');
+    const expected = Array.from(positions.array);
+    flow.sample(time + 0.1);
+    expect(Array.from(positions.array)).not.toEqual(expected);
+    // The liquid stays attached at the socket while its free surface moves.
+    expect(Array.from(positions.array).slice(0, 75)).toEqual(expected.slice(0, 75));
     flow.sample(2); flow.sample(23); flow.sample(time);
-    expect(Array.from(beads.instanceMatrix.array)).toEqual(expected);
-    // Both water streams remain at/below the port elevation, allowing droplet radius.
-    for (let i = 0; i < beads.count; i++) {
-      beads.getMatrixAt(i, matrix);
-      expect(point.setFromMatrixPosition(matrix).y).toBeLessThan(0.18);
-    }
+    expect(Array.from(positions.array)).toEqual(expected);
+    expect(Array.from(positions.array).every(Number.isFinite)).toBe(true);
   }
   disposeObject(product);
 });
