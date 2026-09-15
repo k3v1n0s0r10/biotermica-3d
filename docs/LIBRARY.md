@@ -1,0 +1,35 @@
+# Product library
+
+Open **Library** in the top navigation. The menu separates:
+
+- **Models**: physical product assemblies to inspect.
+- **Showcases**: complete presentations, each tied to one model and its camera/lighting sequence.
+- **Animations**: reusable motions, with an explicit list of compatible model IDs.
+
+Search filters the active collection. Opening a model enters inspection mode. Opening a showcase plays its film. Opening an animation runs it on the selected model when compatible, otherwise on its first compatible model. Reduced-motion users remain paused. Opening the menu pauses playback; close it and press Play to continue.
+
+The active model and experience appear beside the Library button. URL parameters (`mode`, `model`, `animation`, `showcase`) preserve selection when reloading or copying a local preview link. Invalid or stale IDs fall back to valid entries. The library does not upload, create or edit assets; new entries are registered in code.
+
+## Add content
+
+Edit `src/library/catalog.ts`. The menus and counts derive from these arrays; do not add menu buttons manually.
+
+### Model
+
+Add a `ModelEntry` with a stable ID, display name, description, version, synchronous `create()` factory, initial camera position and look target. The factory must return a new exclusively owned `Group` on each call. Follow MODEL-GUIDE.md for units and component conventions. Add compatible animations using `modelIds`; models without animations remain inspectable with playback disabled. Async GLB loading will require awaiting the factory in the selection lifecycle before enabling playback.
+
+### Animation
+
+Add an `AnimationEntry` with a stable ID, metadata, compatible `modelIds`, and a factory returning `{ duration, sample(seconds) }`. Sample absolute time and reset all animated properties deterministically. Include required named nodes in the model contract. No model-specific assumptions belong in the library UI. `fan-study`, for example, requires the `fan-rotor` node; the turntable acts on the product root.
+
+### Showcase
+
+Add a `ShowcaseEntry` with its owning `modelId`, chapter captions, edition, duration, and camera/stage sequence factory. The factory returns `{ duration, sample(seconds) }`; sampling returns the chapter index used for the overlay. Metadata durations should agree with actual sequences. The shared studio is currently the stage contract; introduce explicit stage factories when showcases need genuinely different environments.
+
+## Selection lifecycle
+
+`resolveSelection()` resolves URL/menu selections and compatibility. `main.ts` pauses playback, disposes the old viewer, creates a fresh product/viewer, updates the UI and URL, and starts playback when appropriate. This avoids accumulated object transforms, duplicate loops, and stale GPU resources when changing selections. `core/viewer.ts` receives factories through options rather than importing a hard-coded product or sequence.
+
+The catalog currently bundles factories eagerly. As the library grows, migrate factory imports to dynamic imports and add loading/error states and cancellation for asynchronous selection. Keep the stable IDs and user-facing menu structure.
+
+Validate with `bun run build`, `bun test`, and browser checks for model → animation → showcase switching, search, keyboard dismissal, timeline reset, and reloadable links.
