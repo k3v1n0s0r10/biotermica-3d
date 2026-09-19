@@ -704,3 +704,14 @@ input {
 #model-actions[hidden] {
   display: none;
 }
+
+/* Clean product films omit editorial overlays but retain workspace controls. */
+body.showcase[data-clean="true"] {
+  background: #fff;
+}
+.showcase[data-clean="true"] .film-overlay {
+  display: none;
+}
+.showcase[data-clean="true"] .workspace-bar {
+  color: var(--brand-navy);
+}

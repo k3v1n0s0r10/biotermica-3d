@@ -134,6 +134,7 @@ function updateLabels(
   requireValue(document.querySelector('#chapter-total')).textContent = String(
     film.chapters.length,
   ).padStart(2, '0');
+  document.body.dataset.clean = String(film.clean);
   updateHints(model, film);
 }
 function updateHints(model: ModelEntry, film: ShowcaseEntry) {

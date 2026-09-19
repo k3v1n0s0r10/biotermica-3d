@@ -18,6 +18,10 @@ import {
   createHeatPumpCycle,
   showcaseDuration,
 } from '../showcases/heat-pump-cycle';
+import {
+  createHeatPumpWhite,
+  whiteShowcaseDuration,
+} from '../showcases/heat-pump-white';
 
 export interface ModelEntry {
   id: string;
@@ -45,6 +49,7 @@ export interface ShowcaseEntry {
   duration: number;
   modelId: string;
   edition: string;
+  clean?: boolean;
   chapters: readonly (readonly [string, string, string])[];
   create(
     stage: ReturnType<typeof createStudio>,
@@ -141,6 +146,18 @@ export const animations: AnimationEntry[] = [
   },
 ];
 export const showcases: ShowcaseEntry[] = [
+  {
+    id: 'heat-pump-white',
+    name: 'Estudio en blanco',
+    edition: 'Producto en movimiento',
+    description:
+      'Una presentación sin textos sobre blanco puro, con vistas del frente, ventilador y laterales.',
+    duration: whiteShowcaseDuration,
+    modelId: 'heat-pump-v1',
+    clean: true,
+    chapters: [],
+    create: createHeatPumpWhite,
+  },
   {
     id: 'form-in-motion',
     name: 'El calor del aire, en tu agua',

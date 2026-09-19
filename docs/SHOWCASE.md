@@ -1,3 +1,11 @@
+# White product showcase
+
+The default showcase, `heat-pump-white`, is a presentation without added text or logo overlays on pure white (`#ffffff`). A 15-second continuous orbit rises over the fan and returns seamlessly to the front three-quarter view. Neutral studio lighting retains the cabinet details and reflections, with no floor or flow effects. Camera and fan motion use absolute time, including portrait framing and reduced-motion support.
+
+Open `/?showcase=heat-pump-white` for the white showcase. Library menus, inspection switching, and playback controls remain available. The original explanatory film remains available at `/?showcase=form-in-motion`.
+
+Camera and lighting live in `src/showcases/heat-pump-white.ts`. The catalog's `clean` flag hides only the editorial overlay for this showcase, retaining menus and playback controls.
+
 # Starter showcase — El calor del aire, en tu agua
 
 This is the accepted starter presentation for Biotérmica: a live, looping 24-second Three.js sequence, not an encoded video. Its stable catalog ID is `form-in-motion`; the model is `heat-pump-v1`. Keep IDs stable when changing display names so saved links continue to resolve.
