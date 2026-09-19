@@ -13,6 +13,7 @@ import {
   Vector3,
 } from 'three';
 import { createHeatPumpPipingComposition } from '../compositions/heat-pump/piping';
+import { createWaterPipingComposition } from '../compositions/heat-pump/water-piping';
 import { createCoil } from './coil';
 import { createCompressor } from './components/compressor';
 import { createTitaniumHeatExchanger } from './components/titanium-heat-exchanger';
@@ -202,7 +203,7 @@ export function createHeatPump() {
   );
   lidCorner.rotation.x = Math.PI / 2;
   lidCorner.position.set(0.409, 1.065, 0.409);
-  box('pocket-back', 0.218, 0.1625, 0.009, 0.334, 0.16875, 0.416, black);
+  mesh('pocket-back', createPocketBack(), black).position.z = 0.4115;
   box('pocket-side', 0.009, 0.1625, 0.218, 0.416, 0.16875, 0.334, paint);
   box('pocket-ceiling', 0.23, 0.009, 0.23, 0.335, 0.249, 0.335, paint);
   box('pocket-floor', 0.23, 0.009, 0.23, 0.335, 0.092, 0.335, edge);
@@ -387,6 +388,27 @@ export function createHeatPump() {
   cabinet.add(internals);
   internals.add(
     createHeatPumpPipingComposition(cabinet, compressor, exchanger, coil),
+    createWaterPipingComposition(cabinet, exchanger),
   );
   return product;
+}
+
+/** Service-pocket sheet with open passages for both water sockets. */
+function createPocketBack() {
+  const shape = new Shape();
+  shape.moveTo(0.225, 0.0875);
+  shape.lineTo(0.443, 0.0875);
+  shape.lineTo(0.443, 0.25);
+  shape.lineTo(0.225, 0.25);
+  shape.closePath();
+  for (const x of [0.281, 0.376]) {
+    const passage = new Path();
+    passage.absarc(x, 0.169, 0.025, 0, Math.PI * 2, true);
+    shape.holes.push(passage);
+  }
+  return new ExtrudeGeometry(shape, {
+    depth: 0.009,
+    bevelEnabled: false,
+    curveSegments: 32,
+  });
 }
