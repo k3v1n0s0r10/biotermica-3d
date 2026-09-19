@@ -23,7 +23,6 @@ const smooth = (value: number) => {
   const t = Math.max(0, Math.min(1, value));
   return t * t * (3 - 2 * t);
 };
-const flowStageAt = (seconds: number) => Math.floor(loopTime(seconds, 24) / 6);
 
 function airPosition(
   stage: number,
@@ -73,7 +72,9 @@ function airPosition(
 }
 
 /** Illustrative flow directions, not a fluid simulation. All particles use absolute time. */
-export function createHeatFlow(product: Object3D) {
+export function createHeatFlow(product: Object3D, duration = 24) {
+  loopTime(0, duration);
+  const stageDuration = duration / 4;
   const cabinet = product.getObjectByName('cabinet');
   if (!cabinet) throw new Error('Heat flow requires a cabinet group.');
   const sockets = cabinet.children
@@ -183,7 +184,7 @@ export function createHeatFlow(product: Object3D) {
     points.visible = stage === active;
     points.material.opacity =
       stage === active
-        ? 0.035 * smooth(local / 0.4) * smooth((6 - local) / 0.45)
+        ? 0.035 * smooth(local / 0.4) * smooth((stageDuration - local) / 0.45)
         : 0;
     if (!points.visible) return;
     const position = points.geometry.getAttribute('position');
@@ -218,7 +219,9 @@ export function createHeatFlow(product: Object3D) {
   ) {
     group.visible = stage === active;
     const fade =
-      stage === active ? smooth(local / 0.4) * smooth((6 - local) / 0.45) : 0;
+      stage === active
+        ? smooth(local / 0.4) * smooth((stageDuration - local) / 0.45)
+        : 0;
     material.opacity = fade;
     if (!group.visible) return;
     const positions = geometry.getAttribute('position');
@@ -253,9 +256,9 @@ export function createHeatFlow(product: Object3D) {
   return {
     root,
     sample(seconds: number) {
-      const t = loopTime(seconds, 24),
-        active = flowStageAt(t);
-      const local = t - active * 6;
+      const t = loopTime(seconds, duration),
+        active = Math.floor(t / stageDuration);
+      const local = t - active * stageDuration;
       for (const system of systems) sampleAir(system, t, active, local);
       for (const stream of water) sampleWater(stream, t, active, local);
       return active;

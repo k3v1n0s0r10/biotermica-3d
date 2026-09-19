@@ -5,6 +5,7 @@ import { loopTime } from '../animations/turntable';
 import { requireValue } from '../core/require-value';
 import type { createStudio } from '../scenes/studio';
 import { applyWhitePresentation } from '../scenes/white-presentation';
+import { defaultShowcaseDuration } from './defaults';
 
 type Stage = ReturnType<typeof createStudio>;
 type Point = [number, number, number];
@@ -24,49 +25,50 @@ const showcaseShots: readonly Shot[] = [
     rotation: -0.22,
   },
   {
-    time: 5,
+    time: (5 / 24) * defaultShowcaseDuration,
     eye: [1.7, 1.48, 2.35],
     target: [0, 0.62, 0],
     rotation: 0.24,
   },
   {
-    time: 8,
+    time: (8 / 24) * defaultShowcaseDuration,
     eye: [1.1, 2.7, 1.8],
     target: [0, 1.0, 0],
     rotation: 0.5,
   },
   {
-    time: 11,
+    time: (11 / 24) * defaultShowcaseDuration,
     eye: [0.95, 2.75, 1.8],
     target: [0, 1.0, 0],
     rotation: 0.5,
   },
   {
-    time: 14,
+    time: (14 / 24) * defaultShowcaseDuration,
     eye: [1.25, 0.65, 1.72],
     target: [0.2, 0.32, 0.2],
     rotation: -0.12,
   },
   {
-    time: 18,
+    time: (18 / 24) * defaultShowcaseDuration,
     eye: [1.25, 0.65, 1.72],
     target: [0.2, 0.32, 0.2],
     rotation: -0.12,
   },
   {
-    time: 21,
+    time: (21 / 24) * defaultShowcaseDuration,
     eye: [1.4, 0.8, 1.95],
     target: [0.2, 0.36, 0.2],
     rotation: -0.12,
   },
   {
-    time: 24,
+    time: defaultShowcaseDuration,
     eye: [2.7, 1.22, 3.25],
     target: [0, 0.57, 0],
     rotation: -0.22,
   },
 ];
-export const showcaseDuration = 24;
+
+export const showcaseDuration = defaultShowcaseDuration;
 const ease = (t: number) => t * t * t * (t * (t * 6 - 15) + 10);
 
 export function createHeatPumpCycle(stage: Stage, camera: PerspectiveCamera) {
@@ -74,7 +76,7 @@ export function createHeatPumpCycle(stage: Stage, camera: PerspectiveCamera) {
     target = new Vector3();
   const nextEye = new Vector3(),
     nextTarget = new Vector3();
-  const flow = createHeatFlow(stage.product);
+  const flow = createHeatFlow(stage.product, showcaseDuration);
   const fan = createFanAnimation(stage.product);
   return {
     setShadows(_enabled: boolean) {},

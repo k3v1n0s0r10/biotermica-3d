@@ -13,7 +13,7 @@ test('showcase shares the inspection fan motion while retaining cabinet choreogr
     animations.find((entry) => entry.id === 'fan-study'),
   ).create(model);
   const film = createHeatPumpCycle(stage, new PerspectiveCamera(35, 16 / 9));
-  for (const time of [0.3, 1.1, 5.99, 6, 9.65, 23.99, 24, -0.3]) {
+  for (const time of [0.3, 1.1, 3.749, 3.75, 9.65, 14.99]) {
     study.sample(time);
     film.sample(time);
     expect(
@@ -24,7 +24,7 @@ test('showcase shares the inspection fan motion while retaining cabinet choreogr
   expect(
     requireValue(model.getObjectByName('fan-rotor')).rotation.y,
   ).toBeCloseTo(Math.PI);
-  film.sample(8);
+  film.sample(5);
   expect(stage.product.rotation.y).toBeCloseTo(0.5);
   expect(model.rotation.y).toBe(0);
   disposeObject(stage.scene);
@@ -44,6 +44,17 @@ test('showcase reproduces camera, product, fan and lighting after arbitrary seek
     accent: stage.fill.color.getHex(),
     key: stage.key.position.toArray(),
   });
+  expect(film.duration).toBe(15);
+  for (const [time, chapter] of [
+    [0, 0],
+    [3.75, 1],
+    [7.5, 2],
+    [11.25, 3],
+    [14.99, 3],
+    [15, 0],
+  ] as const) {
+    expect(film.sample(time)).toBe(chapter);
+  }
   film.sample(9.25);
   const expected = state();
   for (const t of [23.9, 1, 17, 0, -5]) film.sample(t);
@@ -51,7 +62,7 @@ test('showcase reproduces camera, product, fan and lighting after arbitrary seek
   expect(state()).toEqual(expected);
   film.sample(0);
   const start = state();
-  film.sample(24);
+  film.sample(15);
   expect(state()).toEqual(start);
   for (const t of [0, 6, 11, 16, 20, 23.999]) {
     film.sample(t);

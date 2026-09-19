@@ -3,8 +3,9 @@ import { createFanAnimation } from '../animations/fan';
 import { loopTime } from '../animations/turntable';
 import type { createStudio } from '../scenes/studio';
 import { applyWhitePresentation } from '../scenes/white-presentation';
+import { defaultShowcaseDuration } from './defaults';
 
-export const whiteShowcaseDuration = 15;
+export const whiteShowcaseDuration = defaultShowcaseDuration;
 
 /** A continuous product orbit with a gentle rise over the fan and a seamless return. */
 export function createHeatPumpWhite(
