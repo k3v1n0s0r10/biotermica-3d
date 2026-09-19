@@ -1,6 +1,6 @@
 # Modular models and animations
 
-Models and animations must be reusable and composable. Showcases are the final composition layer: they connect models, animations, effects, cameras and lighting into a complete presentation.
+Models and animations must be reusable and composable. Model compositions assemble and connect a model's components. Showcases compose models, animations, effects, cameras and lighting into a complete presentation.
 
 ## Models can contain models
 
@@ -9,6 +9,14 @@ Models and animations must be reusable and composable. Showcases are the final c
 - Each factory returns a fresh named group. Preserve useful local origins, units and attachment points; the parent assembly owns placement, while the child owns its internal geometry and rest transforms.
 - Expose stable named parts or explicit references for animation targets. Scope lookups to the relevant component when an assembly contains several instances of the same model.
 - Keep resource ownership explicit. The current disposal system assumes exclusive ownership per product instance; shared cached resources need an ownership policy before reuse across viewers.
+
+## Compositions belong to a model
+
+- Keep assembly-specific connections and arrangements in `src/compositions/<model>/`. For example, `src/compositions/heat-pump/piping.ts` connects the heat pump's compressor, coil and titanium exchanger.
+- The owning model calls its composition with references to the components it has assembled. Compositions use those components' attachment points and the model's coordinate frame.
+- A composition is part of its owning model, not a standalone model or library entry. Keep independently reusable physical components in `src/models/`.
+- Preserve named parts and explicit resource ownership: the owning model instance owns and disposes composition geometry and materials along with its component resources.
+- Compositions must not import their owning model factory, showcases or library UI. Model factories may import their compositions without introducing circular dependencies.
 
 ## Models can have multiple animations
 

@@ -55,13 +55,16 @@ heat-pump
     fan-rotor                    Rotate this group around local Y
       fan-hub / fan-blade-0..4
     fan-guard
-    internals                    Attachment group for internal models
+    internals                    Attachment group for internal models and compositions
       compressor                 X ≈ -0.1094, Y = 0.086, Z ≈ 0.1328 m; yaw 15°
       titanium-heat-exchanger     X ≈ 0.1094, Y = 0.093, Z ≈ -0.1328 m; yaw 15°
+      refrigerant-piping          Heat-pump piping composition
   support-legs
 ```
 
 Repeated detail names are intentional: use `traverse` to collect all sockets or fasteners; `getObjectByName` returns only the first match. Keep animation attachment group names stable. Each product instance exclusively owns its resources; dispose it through `disposeObject` only when no longer used. Repeated fins use instancing; shared meshes within one product may share geometry/materials.
+
+The heat pump owns its piping composition in `src/compositions/heat-pump/piping.ts`. It connects the compressor suction to the bottom of the coil suction header, the compressor discharge to the titanium exchanger inlet, and the exchanger outlet to the coil injection port. Straight runs meet through 90° elbows. The composition receives the assembled components and creates resources owned by this heat-pump instance.
 
 ## Add an internal component
 

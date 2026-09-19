@@ -12,6 +12,7 @@ import {
   TorusGeometry,
   Vector3,
 } from 'three';
+import { createHeatPumpPipingComposition } from '../compositions/heat-pump/piping';
 import { createCoil } from './coil';
 import { createCompressor } from './components/compressor';
 import { createTitaniumHeatExchanger } from './components/titanium-heat-exchanger';
@@ -384,5 +385,8 @@ export function createHeatPump() {
   });
   // Component factories retain ownership of their own shadow/material settings.
   cabinet.add(internals);
+  internals.add(
+    createHeatPumpPipingComposition(cabinet, compressor, exchanger, coil),
+  );
   return product;
 }
