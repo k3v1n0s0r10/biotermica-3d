@@ -78,3 +78,11 @@ For GLB parts, use `loadModel`; preserve scale and node names, await loading bef
 Run `bun run build` and relevant `bun test` checks. Inspect all four corners, top opening, low side angles, PVC bores, and lid seams in the browser. Keep the small feet small. Check multiple timeline positions after changing animations. Avoid claiming manufacturing accuracy or physical airflow/thermal behaviour from this visual model.
 
 Next work: measured dimensions, internal component assemblies, pipe routing, removable panel/exploded views, richer powder-coat detail, and offline video export. The current showcase is a live Three.js animation, not an encoded video.
+
+## Titanium pool heat exchanger
+
+`createTitaniumHeatExchanger()` in `src/models/components/titanium-heat-exchanger.ts` creates a standalone photo-based component, approximately 0.64 m tall with a 0.20 m diameter body. Its bottom-centre origin uses metres, +Y up, and both hollow pool-water unions face +Z. Dimensions and tube routing are illustrative, not engineering drawings.
+
+Stable targets include `reveal-sleeve`, `upper-housing`, `lower-housing`, `water-inlet`, `water-outlet`, `titanium-serpentine`, `water-volume`, and `water-surface`. The continuous corrugated tube includes a descending feed and 17 ascending turns ending at the second top fitting. The water chamber is partially filled to leave a visible surface. Resources belong exclusively to the model instance.
+
+The library's `exchanger-reveal` animation fades only the central sleeve, holds the internal view, then restores the exterior over 12 seconds. It controls sleeve opacity, depth writing, and shadow casting through absolute-time sampling. The end caps and unions remain opaque. This is an illustrative transparency effect, not a fluid or heat-transfer simulation. The model also supports the shared turntable animation.

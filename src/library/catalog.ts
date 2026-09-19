@@ -1,4 +1,8 @@
 import type { Group, PerspectiveCamera } from 'three';
+import {
+  createExchangerReveal,
+  exchangerRevealDuration,
+} from '../animations/exchanger-reveal';
 import { createFanAnimation, fanDuration } from '../animations/fan';
 import {
   type AnimationSequence,
@@ -7,6 +11,7 @@ import {
 import { requireValue } from '../core/require-value';
 import { createCoil } from '../models/coil';
 import { createCompressor } from '../models/components/compressor';
+import { createTitaniumHeatExchanger } from '../models/components/titanium-heat-exchanger';
 import { createHeatPump } from '../models/heat-pump';
 import type { createStudio } from '../scenes/studio';
 import {
@@ -75,14 +80,38 @@ export const models: ModelEntry[] = [
     camera: [0.48, 0.43, 0.94],
     target: [0, 0.21, 0],
   },
+  {
+    id: 'titanium-heat-exchanger-v1',
+    name: 'Intercambiador de titanio',
+    version: 'V1 · Exterior e interior',
+    description:
+      'Carcasa azul, uniones de agua y serpentín continuo de titanio. Revela el interior y su cámara parcialmente llena de agua.',
+    create: createTitaniumHeatExchanger,
+    camera: [0.72, 0.66, 1.22],
+    target: [0, 0.3, 0],
+  },
 ];
 export const animations: AnimationEntry[] = [
+  {
+    id: 'exchanger-reveal',
+    name: 'Interior de titanio',
+    description:
+      'La carcasa se vuelve translúcida para mostrar el serpentín y el agua; después recupera su acabado azul.',
+    duration: exchangerRevealDuration,
+    modelIds: ['titanium-heat-exchanger-v1'],
+    create: createExchangerReveal,
+  },
   {
     id: 'turntable',
     name: 'Vista de 360°',
     description: 'Un giro de ocho segundos para explorar todo el exterior.',
     duration: 8,
-    modelIds: ['heat-pump-v1', 'heat-pump-coil-v1', 'compressor-v1'],
+    modelIds: [
+      'heat-pump-v1',
+      'heat-pump-coil-v1',
+      'compressor-v1',
+      'titanium-heat-exchanger-v1',
+    ],
     create: createTurntable,
   },
   {
