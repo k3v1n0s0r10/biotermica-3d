@@ -10,7 +10,8 @@ export function createFanAnimation(model: Object3D): AnimationSequence {
   return {
     duration: fanDuration,
     sample(seconds) {
-      fan.rotation.y = (loopTime(seconds, fanDuration) / fanDuration) * Math.PI * 2 * 10;
+      fan.rotation.y =
+        (loopTime(seconds, fanDuration) / fanDuration) * Math.PI * 2 * 10;
     },
   };
 }

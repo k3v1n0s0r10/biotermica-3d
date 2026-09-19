@@ -9,17 +9,21 @@ import { createHeatPumpCycle } from '../src/showcases/heat-pump-cycle';
 test('showcase shares the inspection fan motion while retaining cabinet choreography', () => {
   const stage = createStudio();
   const model = requireValue(models[0]).create();
-  const study = requireValue(animations.find((entry) => entry.id === 'fan-study')).create(model);
+  const study = requireValue(
+    animations.find((entry) => entry.id === 'fan-study'),
+  ).create(model);
   const film = createHeatPumpCycle(stage, new PerspectiveCamera(35, 16 / 9));
   for (const time of [0.3, 1.1, 5.99, 6, 9.65, 23.99, 24, -0.3]) {
     study.sample(time);
     film.sample(time);
-    expect(requireValue(stage.product.getObjectByName('fan-rotor')).rotation.y).toBeCloseTo(
-      requireValue(model.getObjectByName('fan-rotor')).rotation.y,
-    );
+    expect(
+      requireValue(stage.product.getObjectByName('fan-rotor')).rotation.y,
+    ).toBeCloseTo(requireValue(model.getObjectByName('fan-rotor')).rotation.y);
   }
   study.sample(0.3);
-  expect(requireValue(model.getObjectByName('fan-rotor')).rotation.y).toBeCloseTo(Math.PI);
+  expect(
+    requireValue(model.getObjectByName('fan-rotor')).rotation.y,
+  ).toBeCloseTo(Math.PI);
   film.sample(8);
   expect(stage.product.rotation.y).toBeCloseTo(0.5);
   expect(model.rotation.y).toBe(0);

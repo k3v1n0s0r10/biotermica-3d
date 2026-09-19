@@ -25,7 +25,13 @@ const smooth = (value: number) => {
 };
 const flowStageAt = (seconds: number) => Math.floor(loopTime(seconds, 24) / 6);
 
-function airPosition(stage: number, i: number, random: number[], p: number, target: Vector3) {
+function airPosition(
+  stage: number,
+  i: number,
+  random: number[],
+  p: number,
+  target: Vector3,
+) {
   let x = 0,
     y = 0,
     z = 0;
@@ -73,8 +79,11 @@ export function createHeatFlow(product: Object3D) {
   const sockets = cabinet.children
     .filter((node) => node.name === 'pvc-water-socket')
     .sort((a, b) => a.position.x - b.position.x);
-  if (sockets.length < 2) throw new Error('Heat flow requires two PVC water sockets.');
-  const ports = sockets.map((socket) => socket.position.clone().add(new Vector3(0, 0, 0.065)));
+  if (sockets.length < 2)
+    throw new Error('Heat flow requires two PVC water sockets.');
+  const ports = sockets.map((socket) =>
+    socket.position.clone().add(new Vector3(0, 0, 0.065)),
+  );
   const root = new Group();
   root.name = 'showcase-heat-flow';
   cabinet.add(root);
@@ -95,7 +104,8 @@ export function createHeatFlow(product: Object3D) {
         colors[offset + 1] = color.g;
         colors[offset + 2] = color.b;
         // Fade to transparent at both ends, rather than leaving bright dust-like heads.
-        colors[offset + 3] = Math.sin(requireValue(trailFractions[tail]) * Math.PI) ** 2;
+        colors[offset + 3] =
+          Math.sin(requireValue(trailFractions[tail]) * Math.PI) ** 2;
       }
     const geometry = new BufferGeometry();
     geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
@@ -111,7 +121,12 @@ export function createHeatFlow(product: Object3D) {
     const points = new LineSegments(geometry, material);
     points.frustumCulled = false;
     points.name = requireValue(
-      ['warm-air-intake', 'cold-air-exhaust', 'hot-water-outlet', 'cold-water-inlet'][stage],
+      [
+        'warm-air-intake',
+        'cold-air-exhaust',
+        'hot-water-outlet',
+        'cold-water-inlet',
+      ][stage],
     );
     root.add(points);
     return { points, count, stage, seeds };
@@ -125,7 +140,11 @@ export function createHeatFlow(product: Object3D) {
     const path = new CatmullRomCurve3(
       Array.from({ length: 33 }, (_, i) => {
         const d = i / 32;
-        return new Vector3(port.x, port.y - (stage === 2 ? 0.1 : 0.025) * d * d, port.z + d * 0.36);
+        return new Vector3(
+          port.x,
+          port.y - (stage === 2 ? 0.1 : 0.025) * d * d,
+          port.z + d * 0.36,
+        );
       }),
     );
     const material = new MeshPhysicalMaterial({
@@ -146,7 +165,9 @@ export function createHeatFlow(product: Object3D) {
     });
     const geometry = new TubeGeometry(path, 128, 0.014, 24, false);
     const rest = Float32Array.from(geometry.getAttribute('position').array);
-    const centers = Array.from({ length: 129 }, (_, i) => path.getPointAt(i / 128));
+    const centers = Array.from({ length: 129 }, (_, i) =>
+      path.getPointAt(i / 128),
+    );
     const stream = new Mesh(geometry, material);
     stream.name = 'water-surface';
     stream.frustumCulled = false;
@@ -161,7 +182,9 @@ export function createHeatFlow(product: Object3D) {
   ) {
     points.visible = stage === active;
     points.material.opacity =
-      stage === active ? 0.035 * smooth(local / 0.4) * smooth((6 - local) / 0.45) : 0;
+      stage === active
+        ? 0.035 * smooth(local / 0.4) * smooth((6 - local) / 0.45)
+        : 0;
     if (!points.visible) return;
     const position = points.geometry.getAttribute('position');
     const point = new Vector3();
@@ -170,10 +193,18 @@ export function createHeatFlow(product: Object3D) {
         const random = requireValue(seeds[i]);
         // Long, overlapping wisps blend into a continuous current.
         // Shared, slow breathing gives the flow coherence instead of a swarm.
-        const stretch = 0.2 + 0.09 * (0.5 + 0.5 * Math.sin(t * 2.2 + requireValue(random[2]) * 2));
+        const stretch =
+          0.2 +
+          0.09 * (0.5 + 0.5 * Math.sin(t * 2.2 + requireValue(random[2]) * 2));
         const head =
-          fract(t / (0.7 + requireValue(random[4]) * 0.25) + requireValue(random[0])) * 1.3;
-        const p = Math.max(0, Math.min(1, head - stretch * requireValue(trailFractions[tail])));
+          fract(
+            t / (0.7 + requireValue(random[4]) * 0.25) +
+              requireValue(random[0]),
+          ) * 1.3;
+        const p = Math.max(
+          0,
+          Math.min(1, head - stretch * requireValue(trailFractions[tail])),
+        );
         airPosition(stage, i, random, p, point);
         position.setXYZ(i * trailLength + tail, point.x, point.y, point.z);
       }
@@ -186,7 +217,8 @@ export function createHeatFlow(product: Object3D) {
     local: number,
   ) {
     group.visible = stage === active;
-    const fade = stage === active ? smooth(local / 0.4) * smooth((6 - local) / 0.45) : 0;
+    const fade =
+      stage === active ? smooth(local / 0.4) * smooth((6 - local) / 0.45) : 0;
     material.opacity = fade;
     if (!group.visible) return;
     const positions = geometry.getAttribute('position');

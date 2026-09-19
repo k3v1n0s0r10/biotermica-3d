@@ -121,7 +121,9 @@ export function createHeatPumpCycle(stage: Stage, camera: PerspectiveCamera) {
       camera.lookAt(target);
       stage.product.rotation.y = a.rotation + (b.rotation - a.rotation) * u;
       fan.sample(t);
-      const background = aColor.setHex(a.background).lerp(bColor.setHex(b.background), u);
+      const background = aColor
+        .setHex(a.background)
+        .lerp(bColor.setHex(b.background), u);
       (stage.scene.background as Color).copy(background);
       requireValue(stage.scene.fog).color.copy(background);
       stage.floor.material.color.copy(background).multiplyScalar(0.35);

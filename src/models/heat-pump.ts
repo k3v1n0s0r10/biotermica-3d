@@ -20,14 +20,39 @@ import {
 export function createHeatPump() {
   const product = new Group();
   product.name = 'heat-pump';
-  const paint = new MeshStandardMaterial({ color: 0x272b2d, metalness: 0.25, roughness: 0.43 });
-  const edge = new MeshStandardMaterial({ color: 0x34393b, metalness: 0.45, roughness: 0.36 });
+  const paint = new MeshStandardMaterial({
+    color: 0x272b2d,
+    metalness: 0.25,
+    roughness: 0.43,
+  });
+  const edge = new MeshStandardMaterial({
+    color: 0x34393b,
+    metalness: 0.45,
+    roughness: 0.36,
+  });
   const black = new MeshStandardMaterial({ color: 0x090d0f, roughness: 0.8 });
-  const coil = new MeshStandardMaterial({ color: 0x1c2325, metalness: 0.7, roughness: 0.55 });
-  const steel = new MeshStandardMaterial({ color: 0x929b9e, metalness: 0.8, roughness: 0.3 });
-  const pvc = new MeshStandardMaterial({ color: 0xdce0df, metalness: 0, roughness: 0.38 });
+  const coil = new MeshStandardMaterial({
+    color: 0x1c2325,
+    metalness: 0.7,
+    roughness: 0.55,
+  });
+  const steel = new MeshStandardMaterial({
+    color: 0x929b9e,
+    metalness: 0.8,
+    roughness: 0.3,
+  });
+  const pvc = new MeshStandardMaterial({
+    color: 0xdce0df,
+    metalness: 0,
+    roughness: 0.38,
+  });
 
-  function mesh(name: string, geometry: BufferGeometry, material = paint, parent = product) {
+  function mesh(
+    name: string,
+    geometry: BufferGeometry,
+    material = paint,
+    parent = product,
+  ) {
     const object = new Mesh(geometry, material);
     object.name = name;
     parent.add(object);
@@ -109,12 +134,20 @@ export function createHeatPump() {
       }
     mesh(
       'perforated-sheet',
-      new ExtrudeGeometry(shape, { depth: 0.007, bevelEnabled: false, curveSegments: 4 }),
+      new ExtrudeGeometry(shape, {
+        depth: 0.007,
+        bevelEnabled: false,
+        curveSegments: 4,
+      }),
       paint,
       panel,
     );
     // Instanced fine horizontal fins keep the repeating coil detail inexpensive.
-    const fins = new InstancedMesh(new BoxGeometry(width - 0.015, 0.002, 0.015), coil, 150);
+    const fins = new InstancedMesh(
+      new BoxGeometry(width - 0.015, 0.002, 0.015),
+      coil,
+      150,
+    );
     fins.name = 'heat-exchanger-fins';
     const transform = new Object3D();
     for (let i = 0; i < 150; i++) {
@@ -194,18 +227,35 @@ export function createHeatPump() {
     const bore = new Path();
     bore.absarc(0, 0, inner, 0, Math.PI * 2, true);
     section.holes.push(bore);
-    return new ExtrudeGeometry(section, { depth: length, bevelEnabled: false, curveSegments: 32 });
+    return new ExtrudeGeometry(section, {
+      depth: length,
+      bevelEnabled: false,
+      curveSegments: 32,
+    });
   }
   for (const x of [0.281, 0.376]) {
-    const pipe = mesh('pvc-water-socket', pipeGeometry(0.025, 0.019, 0.065), pvc);
+    const pipe = mesh(
+      'pvc-water-socket',
+      pipeGeometry(0.025, 0.019, 0.065),
+      pvc,
+    );
     pipe.position.set(x, 0.169, 0.421);
-    const collar = mesh('pvc-union-collar', pipeGeometry(0.03, 0.025, 0.025), pvc);
+    const collar = mesh(
+      'pvc-union-collar',
+      pipeGeometry(0.03, 0.025, 0.025),
+      pvc,
+    );
     collar.position.set(x, 0.169, 0.43);
   }
   // Discreet fasteners, without labels or branding.
   for (const y of [0.285, 1.015])
     for (const x of [0.248, 0.389]) {
-      const screw = mesh('lid-fastener', new CylinderGeometry(0.004, 0.004, 0.003, 12), steel, lid);
+      const screw = mesh(
+        'lid-fastener',
+        new CylinderGeometry(0.004, 0.004, 0.003, 12),
+        steel,
+        lid,
+      );
       screw.rotation.x = Math.PI / 2;
       screw.position.set(x, y, 0.456);
       box('screw-slot', 0.004, 0.0008, 0.001, x, y, 0.458, black, lid);
@@ -220,7 +270,11 @@ export function createHeatPump() {
   deck.holes.push(aperture);
   const top = mesh(
     'top-deck',
-    new ExtrudeGeometry(deck, { depth: 0.019, bevelEnabled: false, curveSegments: 64 }),
+    new ExtrudeGeometry(deck, {
+      depth: 0.019,
+      bevelEnabled: false,
+      curveSegments: 64,
+    }),
     edge,
   );
   top.rotation.x = -Math.PI / 2;
@@ -237,7 +291,12 @@ export function createHeatPump() {
   fan.name = 'fan-rotor';
   fan.position.y = 1.01;
   product.add(fan);
-  const hub = mesh('fan-hub', new CylinderGeometry(0.075, 0.085, 0.045, 48), steel, fan);
+  const hub = mesh(
+    'fan-hub',
+    new CylinderGeometry(0.075, 0.085, 0.045, 48),
+    steel,
+    fan,
+  );
   hub.position.y = 0.005;
   for (let i = 0; i < 5; i++) {
     const bladeShape = new Shape();
@@ -272,14 +331,33 @@ export function createHeatPump() {
     ring.position.y = 1.096;
   }
   for (let i = 0; i < 12; i++) {
-    const spoke = box('guard-spoke', 0.004, 0.006, 0.76, 0, 1.094, 0, edge, guard);
+    const spoke = box(
+      'guard-spoke',
+      0.004,
+      0.006,
+      0.76,
+      0,
+      1.094,
+      0,
+      edge,
+      guard,
+    );
     spoke.rotation.y = (i * Math.PI) / 12;
   }
-  const cap = mesh('guard-centre-cap', new CylinderGeometry(0.06, 0.06, 0.009, 48), edge, guard);
+  const cap = mesh(
+    'guard-centre-cap',
+    new CylinderGeometry(0.06, 0.06, 0.009, 48),
+    edge,
+    guard,
+  );
   cap.position.y = 1.098;
   for (const x of [-0.421, 0.421])
     for (const z of [-0.421, 0.421]) {
-      const screw = mesh('deck-fastener', new CylinderGeometry(0.005, 0.005, 0.003, 12), steel);
+      const screw = mesh(
+        'deck-fastener',
+        new CylinderGeometry(0.005, 0.005, 0.003, 12),
+        steel,
+      );
       screw.position.set(x, 1.088, z);
     }
   // Keep the cabinet assembly separate from the low-profile support feet.

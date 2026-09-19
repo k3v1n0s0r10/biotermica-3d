@@ -9,13 +9,27 @@ type Category = 'models' | 'showcases' | 'animations';
 function resultCount(count: number) {
   return `${count} ${count === 1 ? 'elemento' : 'elementos'}`;
 }
-export function createLibrary(onSelect: (selection: Partial<Selection>) => void) {
-  const dialog = requireValue(document.querySelector<HTMLDialogElement>('#library-dialog'));
-  const cards = requireValue(document.querySelector<HTMLElement>('#library-cards'));
-  const search = requireValue(document.querySelector<HTMLInputElement>('#library-search'));
-  const tabs = [...document.querySelectorAll<HTMLButtonElement>('[data-category]')];
-  const title = requireValue(document.querySelector<HTMLElement>('#library-category-title'));
-  const count = requireValue(document.querySelector<HTMLElement>('#library-count'));
+export function createLibrary(
+  onSelect: (selection: Partial<Selection>) => void,
+) {
+  const dialog = requireValue(
+    document.querySelector<HTMLDialogElement>('#library-dialog'),
+  );
+  const cards = requireValue(
+    document.querySelector<HTMLElement>('#library-cards'),
+  );
+  const search = requireValue(
+    document.querySelector<HTMLInputElement>('#library-search'),
+  );
+  const tabs = [
+    ...document.querySelectorAll<HTMLButtonElement>('[data-category]'),
+  ];
+  const title = requireValue(
+    document.querySelector<HTMLElement>('#library-category-title'),
+  );
+  const count = requireValue(
+    document.querySelector<HTMLElement>('#library-count'),
+  );
   const events = new AbortController();
   let category: Category = 'models';
   let current: Selection;
@@ -30,7 +44,8 @@ export function createLibrary(onSelect: (selection: Partial<Selection>) => void)
   function selectEntry(id: string) {
     dialog.close();
     if (category === 'models') onSelect({ mode: 'studio', modelId: id });
-    else if (category === 'showcases') onSelect({ mode: 'showcase', showcaseId: id });
+    else if (category === 'showcases')
+      onSelect({ mode: 'showcase', showcaseId: id });
     else {
       const animation = requireValue(animations.find((item) => item.id === id));
       onSelect({
@@ -55,7 +70,9 @@ export function createLibrary(onSelect: (selection: Partial<Selection>) => void)
     const artwork = document.createElement('span');
     artwork.className = `card-art ${category}`;
     artwork.setAttribute('aria-hidden', 'true');
-    artwork.textContent = { models: '▧', showcases: '▷', animations: '↻' }[category];
+    artwork.textContent = { models: '▧', showcases: '▷', animations: '↻' }[
+      category
+    ];
     const meta = document.createElement('span');
     meta.className = 'card-meta';
     meta.textContent = entryMetadata(entry);
@@ -79,7 +96,9 @@ export function createLibrary(onSelect: (selection: Partial<Selection>) => void)
     cards.replaceChildren();
     const entries = { models, showcases, animations }[category];
     const matches = entries.filter((entry) =>
-      `${entry.name} ${entry.description}`.toLowerCase().includes(search.value.toLowerCase()),
+      `${entry.name} ${entry.description}`
+        .toLowerCase()
+        .includes(search.value.toLowerCase()),
     );
     title.textContent = {
       models: 'Modelos',
@@ -88,7 +107,10 @@ export function createLibrary(onSelect: (selection: Partial<Selection>) => void)
     }[category];
     count.textContent = resultCount(matches.length);
     for (const tab of tabs) {
-      tab.setAttribute('aria-pressed', String(tab.dataset.category === category));
+      tab.setAttribute(
+        'aria-pressed',
+        String(tab.dataset.category === category),
+      );
     }
     for (const entry of matches) cards.append(createCard(entry));
     if (!matches.length) renderEmpty();
@@ -116,10 +138,13 @@ export function createLibrary(onSelect: (selection: Partial<Selection>) => void)
     () => dialog.close(),
     { signal: events.signal },
   );
-  for (const [key, entries] of Object.entries({ models, showcases, animations })) {
-    requireValue(document.querySelector(`[data-count="${key}"]`)).textContent = String(
-      entries.length,
-    ).padStart(2, '0');
+  for (const [key, entries] of Object.entries({
+    models,
+    showcases,
+    animations,
+  })) {
+    requireValue(document.querySelector(`[data-count="${key}"]`)).textContent =
+      String(entries.length).padStart(2, '0');
   }
   return {
     open(selection: Selection) {

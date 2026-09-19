@@ -17,14 +17,22 @@ import { createLibrary } from './library/menu';
 const viewport = requireValue(document.querySelector<HTMLElement>('#viewport'));
 const play = requireValue(document.querySelector<HTMLButtonElement>('#play'));
 const reset = requireValue(document.querySelector<HTMLButtonElement>('#reset'));
-const slider = requireValue(document.querySelector<HTMLInputElement>('#timeline'));
+const slider = requireValue(
+  document.querySelector<HTMLInputElement>('#timeline'),
+);
 const output = requireValue(document.querySelector<HTMLOutputElement>('#time'));
-const filmButton = requireValue(document.querySelector<HTMLButtonElement>('#showcase'));
-const studioButton = requireValue(document.querySelector<HTMLButtonElement>('#studio'));
+const filmButton = requireValue(
+  document.querySelector<HTMLButtonElement>('#showcase'),
+);
+const studioButton = requireValue(
+  document.querySelector<HTMLButtonElement>('#studio'),
+);
 const chapter = requireValue(document.querySelector<HTMLElement>('#chapter'));
 const headline = requireValue(document.querySelector<HTMLElement>('#headline'));
 const caption = requireValue(document.querySelector<HTMLElement>('#caption'));
-const chapterNumber = requireValue(document.querySelector<HTMLElement>('#chapter-number'));
+const chapterNumber = requireValue(
+  document.querySelector<HTMLElement>('#chapter-number'),
+);
 const hint = requireValue(document.querySelector<HTMLElement>('#hint'));
 const params = new URLSearchParams(location.search);
 let selection = resolveSelection({
@@ -34,7 +42,9 @@ let selection = resolveSelection({
   showcaseId: params.get('showcase') ?? '',
 });
 const events = new AbortController();
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reducedMotion = window.matchMedia(
+  '(prefers-reduced-motion: reduce)',
+).matches;
 let viewer: ReturnType<typeof createViewer> | undefined;
 let playing = false,
   seconds = 0,
@@ -43,10 +53,14 @@ let playing = false,
   lastChapter = -1;
 let resumeOnVisible = false;
 function updateChapter(index: number) {
-  const film = requireValue(showcases.find((entry) => entry.id === selection.showcaseId));
+  const film = requireValue(
+    showcases.find((entry) => entry.id === selection.showcaseId),
+  );
   if (lastChapter === index) return;
   const copy = film.chapters[index] ?? ['', '', ''];
-  chapter.textContent = copy[0] ? `${String(index + 1).padStart(2, '0')} — ${copy[0]}` : '';
+  chapter.textContent = copy[0]
+    ? `${String(index + 1).padStart(2, '0')} — ${copy[0]}`
+    : '';
   headline.textContent = copy[1];
   caption.textContent = copy[2];
   chapterNumber.textContent = String(index + 1).padStart(2, '0');
@@ -78,10 +92,19 @@ const start = () => {
   startedAt = performance.now() - seconds * 1000;
   frame = requestAnimationFrame(tick);
 };
-function updateControls(model: ModelEntry, animation: AnimationEntry | undefined) {
+function updateControls(
+  model: ModelEntry,
+  animation: AnimationEntry | undefined,
+) {
   document.body.classList.toggle('showcase', selection.mode === 'showcase');
-  filmButton.setAttribute('aria-pressed', String(selection.mode === 'showcase'));
-  studioButton.setAttribute('aria-pressed', String(selection.mode === 'studio'));
+  filmButton.setAttribute(
+    'aria-pressed',
+    String(selection.mode === 'showcase'),
+  );
+  studioButton.setAttribute(
+    'aria-pressed',
+    String(selection.mode === 'studio'),
+  );
   const modelFilms = showcases.filter((entry) => entry.modelId === model.id);
   filmButton.disabled = !modelFilms.length;
   play.disabled = slider.disabled = selection.mode === 'studio' && !animation;
@@ -93,10 +116,14 @@ function updateLabels(
   film: ShowcaseEntry,
   animation: AnimationEntry | undefined,
 ) {
-  requireValue(document.querySelector('#active-model')).textContent = model.name;
+  requireValue(document.querySelector('#active-model')).textContent =
+    model.name;
   requireValue(document.querySelector('#active-experience')).textContent =
-    selection.mode === 'showcase' ? film.name : (animation?.name ?? 'Inspection');
-  requireValue(document.querySelector('#film-name')).textContent = film.name.toUpperCase();
+    selection.mode === 'showcase'
+      ? film.name
+      : (animation?.name ?? 'Inspection');
+  requireValue(document.querySelector('#film-name')).textContent =
+    film.name.toUpperCase();
   requireValue(document.querySelector('#film-edition-name')).textContent =
     film.edition.toUpperCase();
   requireValue(document.querySelector('#chapter-total')).textContent = String(
@@ -144,7 +171,9 @@ function select(input: Partial<Selection>, autoplay = false) {
   const next = resolveSelection({ ...selection, ...input });
   const model = requireValue(models.find((entry) => entry.id === next.modelId));
   const animation = animations.find((entry) => entry.id === next.animationId);
-  const film = requireValue(showcases.find((entry) => entry.id === next.showcaseId));
+  const film = requireValue(
+    showcases.find((entry) => entry.id === next.showcaseId),
+  );
   viewer?.dispose();
   viewer = undefined;
   viewport.replaceChildren();
@@ -168,7 +197,9 @@ function select(input: Partial<Selection>, autoplay = false) {
   }
 }
 const library = createLibrary((input) => select(input, !!input.animationId));
-play.addEventListener('click', () => (playing ? pause() : start()), { signal: events.signal });
+play.addEventListener('click', () => (playing ? pause() : start()), {
+  signal: events.signal,
+});
 slider.addEventListener(
   'input',
   () => {
@@ -196,7 +227,9 @@ filmButton.addEventListener(
   },
   { signal: events.signal },
 );
-studioButton.addEventListener('click', () => select({ mode: 'studio' }), { signal: events.signal });
+studioButton.addEventListener('click', () => select({ mode: 'studio' }), {
+  signal: events.signal,
+});
 requireValue(document.querySelector('#library-open')).addEventListener(
   'click',
   () => {

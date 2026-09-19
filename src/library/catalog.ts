@@ -1,10 +1,17 @@
 import type { Group, PerspectiveCamera } from 'three';
 import { createFanAnimation, fanDuration } from '../animations/fan';
-import { type AnimationSequence, createTurntable } from '../animations/turntable';
+import {
+  type AnimationSequence,
+  createTurntable,
+} from '../animations/turntable';
 import { requireValue } from '../core/require-value';
+import { createCompressor } from '../models/components/compressor';
 import { createHeatPump } from '../models/heat-pump';
 import type { createStudio } from '../scenes/studio';
-import { createHeatPumpCycle, showcaseDuration } from '../showcases/heat-pump-cycle';
+import {
+  createHeatPumpCycle,
+  showcaseDuration,
+} from '../showcases/heat-pump-cycle';
 
 export interface ModelEntry {
   id: string;
@@ -47,6 +54,16 @@ export const models: ModelEntry[] = [
     camera: [2.35, 1.85, 2.65],
     target: [0, 0.55, 0],
   },
+  {
+    id: 'compressor-v1',
+    name: 'Compresor hermético',
+    version: 'V1 · Referencia fotográfica',
+    description:
+      'Carcasa negra esmaltada, conexiones de cobre y base de cuatro apoyos. Dimensiones aproximadas.',
+    create: createCompressor,
+    camera: [0.48, 0.43, 0.94],
+    target: [0, 0.21, 0],
+  },
 ];
 export const animations: AnimationEntry[] = [
   {
@@ -54,13 +71,14 @@ export const animations: AnimationEntry[] = [
     name: 'Vista de 360°',
     description: 'Un giro de ocho segundos para explorar todo el exterior.',
     duration: 8,
-    modelIds: ['heat-pump-v1'],
+    modelIds: ['heat-pump-v1', 'compressor-v1'],
     create: createTurntable,
   },
   {
     id: 'fan-study',
     name: 'Movimiento del ventilador',
-    description: 'Explora el rotor de cinco aspas en movimiento con el gabinete quieto.',
+    description:
+      'Explora el rotor de cinco aspas en movimiento con el gabinete quieto.',
     duration: fanDuration,
     modelIds: ['heat-pump-v1'],
     create(model) {
@@ -118,12 +136,23 @@ export interface Selection {
 /** Resolve stale links and constrain animations to the chosen model. */
 export function resolveSelection(input: Partial<Selection>): Selection {
   const film =
-    showcases.find((entry) => entry.id === input.showcaseId) ?? requireValue(showcases[0]);
+    showcases.find((entry) => entry.id === input.showcaseId) ??
+    requireValue(showcases[0]);
   const mode = input.mode === 'studio' ? 'studio' : 'showcase';
   const model =
-    models.find((entry) => entry.id === (mode === 'showcase' ? film.modelId : input.modelId)) ??
-    requireValue(models[0]);
-  const compatible = animations.filter((entry) => entry.modelIds.includes(model.id));
-  const animation = compatible.find((entry) => entry.id === input.animationId) ?? compatible[0];
-  return { mode, modelId: model.id, animationId: animation?.id ?? '', showcaseId: film.id };
+    models.find(
+      (entry) =>
+        entry.id === (mode === 'showcase' ? film.modelId : input.modelId),
+    ) ?? requireValue(models[0]);
+  const compatible = animations.filter((entry) =>
+    entry.modelIds.includes(model.id),
+  );
+  const animation =
+    compatible.find((entry) => entry.id === input.animationId) ?? compatible[0];
+  return {
+    mode,
+    modelId: model.id,
+    animationId: animation?.id ?? '',
+    showcaseId: film.id,
+  };
 }

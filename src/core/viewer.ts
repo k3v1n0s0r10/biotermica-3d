@@ -8,14 +8,22 @@ import {
 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import type { AnimationEntry, ModelEntry, ShowcaseEntry } from '../library/catalog';
+import type {
+  AnimationEntry,
+  ModelEntry,
+  ShowcaseEntry,
+} from '../library/catalog';
 import { createStudio } from '../scenes/studio';
 import { disposeObject } from './dispose';
 import { requireValue } from './require-value';
 
 export function createViewer(
   container: HTMLElement,
-  options: { model: ModelEntry; animation?: AnimationEntry; showcase?: ShowcaseEntry },
+  options: {
+    model: ModelEntry;
+    animation?: AnimationEntry;
+    showcase?: ShowcaseEntry;
+  },
 ) {
   const renderer = new WebGLRenderer({ antialias: true });
   renderer.outputColorSpace = SRGBColorSpace;
@@ -41,7 +49,10 @@ export function createViewer(
   controls.maxPolarAngle = Math.PI / 2 - 0.02;
   controls.update();
   controls.saveState();
-  const sequence = options.animation?.create(product) ?? { duration: 1, sample() {} };
+  const sequence = options.animation?.create(product) ?? {
+    duration: 1,
+    sample() {},
+  };
   const showcase = options.showcase?.create(stage, camera);
   let mode: 'showcase' | 'studio' = showcase ? 'showcase' : 'studio';
   let lastSampleTime = 0;
@@ -76,7 +87,9 @@ export function createViewer(
   }
   return {
     get duration() {
-      return mode === 'showcase' ? requireValue(showcase).duration : sequence.duration;
+      return mode === 'showcase'
+        ? requireValue(showcase).duration
+        : sequence.duration;
     },
     setMode(next: 'showcase' | 'studio') {
       mode = next === 'showcase' && showcase ? 'showcase' : 'studio';
@@ -106,7 +119,8 @@ export function createViewer(
       disposeObject(scene);
       environment.dispose();
       scene.traverse((object) => {
-        if ('shadow' in object) (object as import('three').DirectionalLight).shadow?.dispose();
+        if ('shadow' in object)
+          (object as import('three').DirectionalLight).shadow?.dispose();
       });
       renderer.dispose();
       renderer.domElement.remove();
