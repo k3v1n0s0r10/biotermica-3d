@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!!.agents", "!!.codex"]
+    "includes": ["**", "!!.agents", "!!.codex", "!!vite.config.ts"]
   },
   "formatter": {
     "enabled": true,
