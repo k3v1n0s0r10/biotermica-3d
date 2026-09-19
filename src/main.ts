@@ -3,6 +3,7 @@ import './style.css';
 import { loopTime } from './animations/turntable';
 import { createViewer } from './core/viewer';
 import { renderModelActions } from './library/actions';
+import { createBackgroundChoice } from './library/background';
 import {
   type AnimationEntry,
   animations,
@@ -75,6 +76,7 @@ const draw = () => {
   slider.value = String(seconds);
   output.value = `${seconds.toFixed(2)} / ${viewer.duration.toFixed(2)} s`;
 };
+const background = createBackgroundChoice(draw, events.signal);
 const tick = (now: number) => {
   if (!viewer) return;
   seconds = loopTime((now - startedAt) / 1000, viewer.duration);
@@ -205,6 +207,7 @@ function select(input: Partial<Selection>, autoplay = false) {
     viewer = createViewer(viewport, {
       model,
       animation,
+      background,
       showcase: next.mode === 'showcase' ? film : undefined,
     });
     selection = next;

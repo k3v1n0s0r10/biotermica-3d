@@ -89,8 +89,8 @@ export function createHeatFlow(product: Object3D) {
   cabinet.add(root);
   const trailLength = 8;
   const trailFractions = [1, 0.75, 0.75, 0.5, 0.5, 0.25, 0.25, 0];
-  const systems = [0xffca83, 0x86ddfa].map((tint, stage) => {
-    const count = 9_000;
+  const systems = [0xc57620, 0x168bb6].map((tint, stage) => {
+    const count = 18_000;
     const seeds = Array.from({ length: count }, (_, i) =>
       Array.from({ length: 5 }, (_, salt) => seed(i, salt + 1)),
     );

@@ -166,6 +166,7 @@ export const showcases: ShowcaseEntry[] = [
       'Descubre cómo aprovechamos el calor del aire para calentar tu agua en cuatro pasos.',
     duration: showcaseDuration,
     modelId: 'heat-pump-v1',
+    clean: true,
     create: createHeatPumpCycle,
     chapters: [
       [

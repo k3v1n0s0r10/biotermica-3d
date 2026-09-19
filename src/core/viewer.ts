@@ -1,5 +1,6 @@
 import {
   ACESFilmicToneMapping,
+  Color,
   PCFShadowMap,
   PerspectiveCamera,
   PMREMGenerator,
@@ -23,6 +24,7 @@ export function createViewer(
     model: ModelEntry;
     animation?: AnimationEntry;
     showcase?: ShowcaseEntry;
+    background: () => string;
   },
 ) {
   const renderer = new WebGLRenderer({ antialias: true });
@@ -57,7 +59,15 @@ export function createViewer(
   let mode: 'showcase' | 'studio' = showcase ? 'showcase' : 'studio';
   let lastSampleTime = 0;
   controls.enabled = false;
-  const render = () => renderer.render(scene, camera);
+  const background = new Color();
+  const render = () => {
+    if (mode === 'showcase' && options.showcase?.clean) {
+      background.set(options.background());
+      scene.background = background;
+      requireValue(scene.fog).color.copy(background);
+    }
+    renderer.render(scene, camera);
+  };
   controls.addEventListener('change', render);
   const resize = new ResizeObserver(() => {
     const width = Math.max(container.clientWidth, 1);

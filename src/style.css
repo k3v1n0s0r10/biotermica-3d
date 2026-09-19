@@ -707,11 +707,44 @@ input {
 
 /* Clean product films omit editorial overlays but retain workspace controls. */
 body.showcase[data-clean="true"] {
-  background: #fff;
+  background: var(--showcase-background, #fff);
 }
 .showcase[data-clean="true"] .film-overlay {
   display: none;
 }
 .showcase[data-clean="true"] .workspace-bar {
   color: var(--brand-navy);
+}
+
+.background-choice {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  white-space: nowrap;
+}
+.showcase[data-clean="true"] .background-choice {
+  display: flex;
+}
+.background-choice select {
+  border: 1px solid #b6cdd7;
+  border-radius: 18px;
+  padding: 8px 12px;
+  background: var(--showcase-background, #fff);
+  color: var(--brand-navy);
+  font: inherit;
+}
+.background-choice select:focus-visible {
+  outline: 2px solid var(--brand-blue);
+  outline-offset: 3px;
+}
+@media (max-width: 640px) {
+  .showcase[data-clean="true"] .workspace-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .background-choice {
+    flex-basis: 100%;
+    margin-left: 0;
+  }
 }

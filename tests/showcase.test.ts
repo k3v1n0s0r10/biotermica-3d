@@ -55,6 +55,7 @@ test('showcase reproduces camera, product, fan and lighting after arbitrary seek
   expect(state()).toEqual(start);
   for (const t of [0, 6, 11, 16, 20, 23.999]) {
     film.sample(t);
+    expect((stage.scene.background as Color).getHex()).toBe(0xffffff);
     expect(camera.position.y).toBeGreaterThan(0);
     expect(camera.position.toArray().every(Number.isFinite)).toBe(true);
   }
