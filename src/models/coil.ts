@@ -81,9 +81,9 @@ function createConnections(material: MeshStandardMaterial) {
     const y = 0.04 + (rows - 1 - row) * pitch;
     const start = new Vector3(0.422, y, 0.19);
     const lead = new Vector3(0.422, y, 0.21);
-    // Count from the top: injection, suction, then a downward two-row U-turn.
-    if (row % 4 === 3) continue;
-    if (row % 4 === 2) {
+    // Count from the top: injection, a downward two-row U-turn, then suction.
+    if (row % 4 === 2) continue;
+    if (row % 4 === 1) {
       const radius = pitch / 2;
       tube(
         'right-return',
@@ -99,7 +99,7 @@ function createConnections(material: MeshStandardMaterial) {
         ),
         0.004,
       );
-    } else if (row % 4 === 1) {
+    } else if (row % 4 === 3) {
       tube(
         'suction-branch',
         new CatmullRomCurve3([
