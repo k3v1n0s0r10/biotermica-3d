@@ -6,6 +6,8 @@ import { brand } from '../brand/theme';
 import { requireValue } from '../core/require-value';
 import type { createStudio } from '../scenes/studio';
 
+import { createShowcaseShadows } from './shadows';
+
 type Stage = ReturnType<typeof createStudio>;
 type Point = [number, number, number];
 interface Shot {
@@ -96,7 +98,9 @@ export function createHeatPumpCycle(stage: Stage, camera: PerspectiveCamera) {
     bColor = new Color();
   const flow = createHeatFlow(stage.product);
   const fan = createFanAnimation(stage.product);
+  const setShadows = createShowcaseShadows(stage);
   return {
+    setShadows,
     duration: showcaseDuration,
     sample(seconds: number) {
       const t = loopTime(seconds, showcaseDuration);
@@ -126,6 +130,7 @@ export function createHeatPumpCycle(stage: Stage, camera: PerspectiveCamera) {
         .lerp(bColor.setHex(b.background), u);
       (stage.scene.background as Color).copy(background);
       requireValue(stage.scene.fog).color.copy(background);
+      stage.floor.visible = true;
       stage.floor.material.color.copy(background).multiplyScalar(0.35);
       stage.floor.material.roughness = 0.56;
       stage.floor.material.metalness = 0;

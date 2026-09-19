@@ -49,7 +49,11 @@ export interface ShowcaseEntry {
   create(
     stage: ReturnType<typeof createStudio>,
     camera: PerspectiveCamera,
-  ): { duration: number; sample(seconds: number): number };
+  ): {
+    duration: number;
+    sample(seconds: number): number;
+    setShadows(enabled: boolean): void;
+  };
 }
 export const models: ModelEntry[] = [
   {

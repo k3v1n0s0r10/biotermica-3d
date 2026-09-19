@@ -2,6 +2,10 @@
 
 Models and animations must be reusable and composable. Model compositions assemble and connect a model's components. Showcases compose models, animations, effects, cameras and lighting into a complete presentation.
 
+## Shadow ownership
+
+All current and future models, components, compositions, loaders, and inspection animations are shadow-free. Inspection disables shadow maps and has no contact shadows, baked shadow textures, or ambient-occlusion effects. Ordinary material shading and reflections remain. Showcases alone may opt into shadows; showcase shadow state must be reversible when switching back to inspection.
+
 ## Models can contain models
 
 - Keep model and component factories in `src/models/`, using `components/` when useful. A model can be used alone or assembled inside another model; it does not need a library entry to be reusable.

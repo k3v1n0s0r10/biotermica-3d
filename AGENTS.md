@@ -5,6 +5,10 @@ This is a Bun, TypeScript, Vite, and Three.js product studio. Read
 relevant skills in `.agents/skills/` for Three.js work. Preserve absolute-time
 animation sampling, named model parts, and explicit GPU resource ownership.
 
+## Shadow ownership
+
+All current and future models, components, compositions, and inspection animations must be shadow-free. Do not enable cast/receive shadows or add contact-shadow planes, baked shadows, or ambient-occlusion effects to models or inspection. Shadows belong exclusively to showcases and must be disabled when returning to inspection. Keep ordinary material lighting and reflections.
+
 ## Required quality workflow
 
 - Before editing, inspect the affected files and their callers. Use

@@ -35,7 +35,7 @@ The cabinet group offset is intentional: do not apply it again to children. For 
 
 ## Scene graph and ownership
 
-`src/models/heat-pump.ts` owns the cabinet geometry and materials. The standalone `src/models/coil.ts` model owns its fins, copper tubing, materials, and shadows; the heat pump imports `createCoil()` and places it at cabinet-local Y = 0.115 m. The coil uses a bottom-centre local origin and is also selectable independently in the library. `createHeatPump()` returns `heat-pump`:
+`src/models/heat-pump.ts` owns the cabinet geometry and materials. The standalone `src/models/coil.ts` model owns its fins, copper tubing, and materials; the heat pump imports `createCoil()` and places it at cabinet-local Y = 0.115 m. The coil uses a bottom-centre local origin and is also selectable independently in the library. `createHeatPump()` returns `heat-pump`:
 
 ```text
 heat-pump
@@ -67,6 +67,8 @@ Repeated detail names are intentional: use `traverse` to collect all sockets or 
 
 The heat pump owns its piping composition in `src/compositions/heat-pump/piping.ts`. It connects the compressor suction to the bottom of the coil suction header, the compressor discharge to the titanium exchanger inlet, and the exchanger outlet to the coil injection port. Straight runs meet through tangent elbows. The composition receives the assembled components and creates resources owned by this heat-pump instance.
 
+The coil injection distributor is recessed into the interior at local X = 0.335 m, Z = 0.075 m. Its flexible copper branches sweep inward from the fin edge, and its supply union faces inward to leave the service opening clear. The refrigerant composition follows the union endpoint and tangent.
+
 The water composition in `src/compositions/heat-pump/water-piping.ts` connects the upper exchanger water outlet to the left PVC socket and the lower inlet to the right socket, matching the showcase flow directions. Hollow reducers seat inside the blue unions. Rigid PVC lengths join separate, thicker elbow fittings with raised socket cuffs; PVC runs must show these accessories rather than appear as continuously bent tubing. The upper return descends behind the service pocket ceiling, with separate low runs to the pierced pocket back. Both water routes clear the copper piping; the component placements remain unchanged.
 
 ## Add an internal component
@@ -92,4 +94,4 @@ Next work: measured dimensions, internal component assemblies, pipe routing, rem
 
 Stable targets include `reveal-sleeve`, `upper-housing`, `lower-housing`, `water-inlet`, `water-outlet`, `titanium-serpentine`, `water-volume`, and `water-surface`. The continuous corrugated tube includes a descending feed and 17 ascending turns ending at the second top fitting. The water chamber is partially filled to leave a visible surface. Resources belong exclusively to the model instance.
 
-The library's `exchanger-reveal` animation fades only the central sleeve, holds the internal view, then restores the exterior over 12 seconds. It controls sleeve opacity, depth writing, and shadow casting through absolute-time sampling. The end caps and unions remain opaque. This is an illustrative transparency effect, not a fluid or heat-transfer simulation. The model also supports the shared turntable animation.
+The library's `exchanger-reveal` animation fades only the central sleeve, holds the internal view, then restores the exterior over 12 seconds. It controls sleeve opacity and depth writing through absolute-time sampling. The end caps and unions remain opaque. This is an illustrative transparency effect, not a fluid or heat-transfer simulation. The model also supports the shared turntable animation.

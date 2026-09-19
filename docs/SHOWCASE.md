@@ -37,7 +37,7 @@ Camera keys are at 0, 5, 8, 11, 14, 18, 21 and 24 seconds; chapter boundaries ar
 | Air/water visuals, paths and six-second stages | `src/animations/heat-flow.ts` |
 | Shared 3D brand palette | `src/brand/theme.ts` |
 | Registration, chapter copy, model ownership | `src/library/catalog.ts` |
-| Floor, fog, lights and contact shadow | `src/scenes/studio.ts` |
+| Floor, fog and lights | `src/scenes/studio.ts` |
 | Renderer, environment, controls and rendering API | `src/core/viewer.ts` |
 | Playback, chapter index, selection lifecycle | `src/main.ts` |
 | Shared logo and caption layout | `index.html`, `src/style.css` |
@@ -53,3 +53,5 @@ Run `bun run build` and `bun test` after sequence changes. Tests cover determini
 ## Future video export
 
 `viewer.renderAt(seconds)` provides the absolute-time render entry point. Fix output size, pixel ratio, frame rate and asset readiness, sample `frameIndex / fps`, then encode frames. HTML logo/captions/controls are outside the WebGL canvas: include a deliberate overlay composition or page-capture strategy. No MP4/WebM exporter, capture UI or encoding pipeline exists yet. Repeatable scene poses do not guarantee pixel-identical results across GPUs/browsers.
+
+Shadows are showcase-only: `src/showcases/shadows.ts` owns shadow casting, receiving, and the contact-shadow plane. The viewer disables these and shadow-map rendering in model inspection.

@@ -34,7 +34,6 @@ export function createHeatPumpPipingComposition(
       copper,
     );
     mesh.name = name;
-    mesh.castShadow = mesh.receiveShadow = true;
     piping.add(mesh);
   }
   const suction = requireValue(compressor.getObjectByName('suction-port'));
@@ -79,13 +78,23 @@ export function createHeatPumpPipingComposition(
   }
   const injectionEnd = injection.geometry.parameters.path.getPoint(1);
   const end = point(injection, injectionEnd.x, injectionEnd.y, injectionEnd.z);
+  // Follow the port's outward tangent so the feed meets a recessed union cleanly.
+  const injectionLead = injectionEnd
+    .clone()
+    .addScaledVector(injection.geometry.parameters.path.getTangent(1), 0.025);
+  const lead = point(
+    injection,
+    injectionLead.x,
+    injectionLead.y,
+    injectionLead.z,
+  );
   const outletEnd = point(outlet, 0, 0.05, 0);
   line('exchanger-outlet-to-coil-injection', 0.005, [
     outletEnd,
     new Vector3(outletEnd.x, 0.82, outletEnd.z),
-    new Vector3(end.x, 0.82, outletEnd.z),
-    new Vector3(end.x, 0.82, end.z + 0.025),
-    end.clone().add(new Vector3(0, 0, 0.025)),
+    new Vector3(lead.x, 0.82, outletEnd.z),
+    new Vector3(lead.x, 0.82, lead.z),
+    lead,
     end,
   ]);
   return piping;

@@ -68,19 +68,20 @@ function createConnections(material: MeshStandardMaterial) {
     material,
   );
   suction.name = 'suction-header';
-  suction.position.set(0.39, 0.46, 0.255);
+  suction.position.set(0.401, 0.46, 0.23);
   connections.add(suction);
   const distributor = new Mesh(
     new CylinderGeometry(0.017, 0.005, 0.035, 24),
     material,
   );
   distributor.name = 'injection-distributor';
-  distributor.position.set(0.31, 0.395, 0.3);
+  // Recess the distributor into the coil interior, away from the service opening.
+  distributor.position.set(0.335, 0.395, 0.075);
   connections.add(distributor);
   for (let row = 0; row < rows; row++) {
     const y = 0.04 + (rows - 1 - row) * pitch;
     const start = new Vector3(0.422, y, 0.19);
-    const lead = new Vector3(0.422, y, 0.21);
+    const lead = new Vector3(0.422, y, 0.203);
     // Count from the top: injection, a downward two-row U-turn, then suction.
     if (row % 4 === 2) continue;
     if (row % 4 === 1) {
@@ -105,24 +106,26 @@ function createConnections(material: MeshStandardMaterial) {
         new CatmullRomCurve3([
           start,
           lead,
-          new Vector3(0.41, y, 0.245),
-          new Vector3(0.39, y, 0.255),
+          new Vector3(0.416, y, suction.position.z - 0.006),
+          new Vector3(suction.position.x, y, suction.position.z),
         ]),
         0.004,
       );
     } else {
       const angle = (row / rows) * Math.PI * 2;
       const port = new Vector3(
-        0.31 + Math.cos(angle) * 0.012,
+        distributor.position.x + Math.cos(angle) * 0.012,
         0.4125,
-        0.3 + Math.sin(angle) * 0.012,
+        distributor.position.z + Math.sin(angle) * 0.012,
       );
       tube(
         'injection-branch',
         new CatmullRomCurve3([
           start,
-          lead,
-          new Vector3(port.x + 0.035, y, port.z),
+          new Vector3(0.422, y, 0.215),
+          new Vector3(0.365, y, 0.17),
+          new Vector3(port.x + 0.04, y, port.z),
+          new Vector3(port.x + 0.04, 0.46, port.z),
           new Vector3(port.x, 0.44, port.z),
           port,
         ]),
@@ -133,10 +136,10 @@ function createConnections(material: MeshStandardMaterial) {
   tube(
     'injection-port',
     new CatmullRomCurve3([
-      new Vector3(0.31, 0.3775, 0.3),
-      new Vector3(0.31, 0.345, 0.3),
-      new Vector3(0.31, 0.325, 0.32),
-      new Vector3(0.31, 0.325, 0.36),
+      new Vector3(0, -0.0175, 0).add(distributor.position),
+      new Vector3(0, -0.05, 0).add(distributor.position),
+      new Vector3(0, -0.07, -0.02).add(distributor.position),
+      new Vector3(0, -0.07, -0.06).add(distributor.position),
     ]),
     0.005,
   );
@@ -208,11 +211,5 @@ export function createCoil() {
     serpentine.add(circuit);
   }
   coil.add(serpentine, createConnections(copper));
-  coil.traverse((part) => {
-    if (part instanceof Mesh) {
-      part.castShadow = true;
-      part.receiveShadow = true;
-    }
-  });
   return coil;
 }

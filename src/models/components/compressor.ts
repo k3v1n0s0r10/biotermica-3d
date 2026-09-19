@@ -44,7 +44,6 @@ export function createCompressor() {
   ) {
     const mesh = new Mesh(geometry, material);
     mesh.name = name;
-    mesh.castShadow = mesh.receiveShadow = true;
     parent.add(mesh);
     return mesh;
   }

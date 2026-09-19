@@ -36,3 +36,5 @@ Add a `ShowcaseEntry` with its owning `modelId`, chapter captions, edition, dura
 The catalog currently bundles factories eagerly. As the library grows, migrate factory imports to dynamic imports and add loading/error states and cancellation for asynchronous selection. Keep the stable IDs and user-facing menu structure.
 
 Validate with `bun run build`, `bun test`, and browser checks for model → contextual action → showcase switching, search, keyboard dismissal, timeline reset, and reloadable links.
+
+Model inspection has no visible ground plane and allows a full vertical orbit, including beneath the model. Ground scenery belongs to showcases.

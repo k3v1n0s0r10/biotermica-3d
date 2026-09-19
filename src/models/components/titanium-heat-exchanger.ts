@@ -51,7 +51,6 @@ export function createTitaniumHeatExchanger() {
   ) {
     const mesh = new Mesh(geometry, material);
     mesh.name = name;
-    mesh.castShadow = mesh.receiveShadow = true;
     parent.add(mesh);
     return mesh;
   }
@@ -207,7 +206,6 @@ export function createTitaniumHeatExchanger() {
     waterMaterial,
   );
   water.position.y = 0.22;
-  water.castShadow = false;
   water.renderOrder = 1;
   const surfaceMaterial = waterMaterial.clone();
   surfaceMaterial.opacity = 0.32;
@@ -217,7 +215,6 @@ export function createTitaniumHeatExchanger() {
     surfaceMaterial,
   );
   surface.position.y = 0.4;
-  surface.castShadow = false;
   surface.renderOrder = 2;
   return root;
 }
@@ -267,7 +264,6 @@ function createSerpentine(material: MeshStandardMaterial) {
   geometry.computeVertexNormals();
   const mesh = new Mesh(geometry, material);
   mesh.name = 'titanium-serpentine';
-  mesh.castShadow = mesh.receiveShadow = true;
   return mesh;
 }
 

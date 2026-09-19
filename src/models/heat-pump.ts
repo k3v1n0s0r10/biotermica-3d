@@ -378,13 +378,6 @@ export function createHeatPump() {
       box('support-leg', 0.085, 0.005, 0.085, x, 0.0055, z, edge, stand);
       box('leg-mounting-plate', 0.11, 0.002, 0.11, x, 0.009, z, edge, stand);
     }
-  product.traverse((object) => {
-    if (object instanceof Mesh) {
-      object.castShadow = true;
-      object.receiveShadow = true;
-    }
-  });
-  // Component factories retain ownership of their own shadow/material settings.
   cabinet.add(internals);
   internals.add(
     createHeatPumpPipingComposition(cabinet, compressor, exchanger, coil),

@@ -3,7 +3,7 @@ import { type AnimationSequence, loopTime } from './turntable';
 
 export const exchangerRevealDuration = 12;
 
-/** Controls only the central sleeve opacity/depth/shadow state; reversible seeking. */
+/** Controls only the central sleeve opacity/depth state; reversible seeking. */
 export function createExchangerReveal(model: Object3D): AnimationSequence {
   const sleeve = model.getObjectByName('reveal-sleeve');
   if (
@@ -22,7 +22,6 @@ export function createExchangerReveal(model: Object3D): AnimationSequence {
         (1 - MathUtils.smoothstep(t, 9, 11.5));
       material.opacity = 1 - reveal * 0.94;
       material.depthWrite = reveal === 0;
-      sleeve.castShadow = reveal < 0.1;
     },
   };
 }

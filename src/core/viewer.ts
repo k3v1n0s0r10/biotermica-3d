@@ -1,6 +1,6 @@
 import {
   ACESFilmicToneMapping,
-  PCFSoftShadowMap,
+  PCFShadowMap,
   PerspectiveCamera,
   PMREMGenerator,
   SRGBColorSpace,
@@ -28,8 +28,8 @@ export function createViewer(
   const renderer = new WebGLRenderer({ antialias: true });
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.toneMapping = ACESFilmicToneMapping;
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = PCFSoftShadowMap;
+  renderer.shadowMap.enabled = Boolean(options.showcase);
+  renderer.shadowMap.type = PCFShadowMap;
   container.append(renderer.domElement);
   const stage = createStudio(options.model.create());
   const { scene, product } = stage;
@@ -46,7 +46,7 @@ export function createViewer(
   controls.target.fromArray(options.model.target);
   controls.minDistance = 1;
   controls.maxDistance = 10;
-  controls.maxPolarAngle = Math.PI / 2 - 0.02;
+  controls.maxPolarAngle = Math.PI; // Inspect the underside as freely as the top.
   controls.update();
   controls.saveState();
   const sequence = options.animation?.create(product) ?? {
@@ -75,6 +75,7 @@ export function createViewer(
     if (fan) fan.rotation.y = 0;
     (scene.background as import('three').Color).setHex(0xe9eeed);
     requireValue(scene.fog).color.setHex(0xe9eeed);
+    stage.floor.visible = false;
     stage.floor.material.color.setHex(0xe9eeed);
     stage.floor.material.roughness = 1;
     stage.floor.material.metalness = 0;
@@ -93,6 +94,8 @@ export function createViewer(
     },
     setMode(next: 'showcase' | 'studio') {
       mode = next === 'showcase' && showcase ? 'showcase' : 'studio';
+      renderer.shadowMap.enabled = mode === 'showcase';
+      showcase?.setShadows(mode === 'showcase');
       controls.enabled = mode === 'studio';
       if (mode === 'studio') {
         controls.reset();

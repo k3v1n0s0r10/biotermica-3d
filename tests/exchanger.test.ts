@@ -25,7 +25,7 @@ test('reveal supports arbitrary seeking and restores the opaque exterior at the 
   animation.sample(12);
   expect(sleeve.material.opacity).toBe(1);
   expect(sleeve.material.depthWrite).toBe(true);
-  expect(sleeve.castShadow).toBe(true);
+  expect(sleeve.castShadow).toBe(false);
   expect(() => animation.sample(Number.NaN)).toThrow();
   disposeObject(model);
 });

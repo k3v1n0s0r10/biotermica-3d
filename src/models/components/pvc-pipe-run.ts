@@ -37,7 +37,6 @@ export function createPvcPipeRun(
       material,
     );
     body.name = straight ? 'pvc-straight-pipe' : 'pvc-elbow-body';
-    body.castShadow = body.receiveShadow = true;
     if (straight) root.add(body);
     else {
       const elbow = new Group();
@@ -64,7 +63,6 @@ export function createPvcPipeRun(
           new Vector3(0, 1, 0),
           curve.getTangent(end),
         );
-        cuff.castShadow = cuff.receiveShadow = true;
         elbow.add(cuff);
       }
       root.add(elbow);

@@ -8,8 +8,8 @@ export async function loadModel(path: string) {
     const gltf = await new GLTFLoader().loadAsync(url);
     gltf.scene.traverse((object) => {
       if (object instanceof Mesh) {
-        object.castShadow = true;
-        object.receiveShadow = true;
+        object.castShadow = false;
+        object.receiveShadow = false;
       }
     });
     return gltf;

@@ -61,7 +61,6 @@ export function createWaterPipingComposition(cabinet: Group, exchanger: Group) {
     points.push(end);
     const pipe = createPvcPipeRun(elbowPath(points, 0.05), pvc);
     pipe.name = `exchanger-${portName}-to-pvc`;
-    reducer.castShadow = reducer.receiveShadow = true;
     piping.add(reducer, pipe);
   }
   return piping;
