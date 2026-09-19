@@ -5,14 +5,14 @@ import {
   DoubleSide,
   ExtrudeGeometry,
   Group,
-  InstancedMesh,
   Mesh,
   MeshStandardMaterial,
-  Object3D,
   Path,
   Shape,
   TorusGeometry,
 } from 'three';
+import { createCoil } from './coil';
+import { createCompressor } from './components/compressor';
 
 /** Reference-based concept, in metres. +Y up, service corner at +X/+Z.
  * Dimensions are illustrative, not manufacturing measurements.
@@ -31,11 +31,6 @@ export function createHeatPump() {
     roughness: 0.36,
   });
   const black = new MeshStandardMaterial({ color: 0x090d0f, roughness: 0.8 });
-  const coil = new MeshStandardMaterial({
-    color: 0x1c2325,
-    metalness: 0.7,
-    roughness: 0.55,
-  });
   const steel = new MeshStandardMaterial({
     color: 0x929b9e,
     metalness: 0.8,
@@ -142,22 +137,11 @@ export function createHeatPump() {
       paint,
       panel,
     );
-    // Instanced fine horizontal fins keep the repeating coil detail inexpensive.
-    const fins = new InstancedMesh(
-      new BoxGeometry(width - 0.015, 0.002, 0.015),
-      coil,
-      150,
-    );
-    fins.name = 'heat-exchanger-fins';
-    const transform = new Object3D();
-    for (let i = 0; i < 150; i++) {
-      transform.position.set(0, 0.01 + i * 0.00615, -0.019);
-      transform.updateMatrix();
-      fins.setMatrixAt(i, transform.matrix);
-    }
-    panel.add(fins);
     return panel;
   }
+  const coil = createCoil();
+  coil.position.y = 0.115;
+  product.add(coil);
   // Front and right have space for the electrical lid at their shared corner.
   const front = ventPanel(0.634, 'front-grille');
   front.position.set(-0.092, 0.105, 0.447);
@@ -366,6 +350,10 @@ export function createHeatPump() {
   cabinet.add(...[...product.children]);
   const internals = new Group();
   internals.name = 'internals';
+  const compressor = createCompressor();
+  // Foot undersides are at local Y = 0.007; the interior floor top is 0.093.
+  compressor.position.set(0, 0.086, 0);
+  internals.add(compressor);
   cabinet.add(internals);
   cabinet.position.y = -0.0325; // Base underside at 1 cm above the floor.
   product.add(cabinet);

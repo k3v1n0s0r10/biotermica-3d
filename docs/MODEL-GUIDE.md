@@ -14,7 +14,7 @@ Preserve these decisions when extending the model:
 - Electrical cover stays flush with the body; only the small bottom water-connection pocket is recessed.
 - Two hollow white PVC water sockets, not metallic refrigerant fittings.
 - Actual opening through the top deck, five complete fan blades beneath a concentric guard. No solid interior block obscuring the blades.
-- The interior may be empty while we build real components.
+- The compressor is centered on the interior floor, using the standalone compressor model at its original scale.
 
 ## Coordinates and current envelope
 
@@ -35,7 +35,7 @@ The cabinet group offset is intentional: do not apply it again to children. For 
 
 ## Scene graph and ownership
 
-`src/models/heat-pump.ts` owns geometry and materials. `createHeatPump()` returns `heat-pump`:
+`src/models/heat-pump.ts` owns the cabinet geometry and materials. The standalone `src/models/coil.ts` model owns its fins, copper tubing, materials, and shadows; the heat pump imports `createCoil()` and places it at cabinet-local Y = 0.115 m. The coil uses a bottom-centre local origin and is also selectable independently in the library. `createHeatPump()` returns `heat-pump`:
 
 ```text
 heat-pump
@@ -43,7 +43,9 @@ heat-pump
     base-pan / interior-floor
     front-grille / right-grille / back-grille / left-grille
       perforated-sheet           Real capsule-shaped holes
-      heat-exchanger-fins        Instanced detail
+    heat-exchanger               Standalone coil model, Y = 0.115 m
+      heat-exchanger-fins        Vertical instanced plates
+      heat-exchanger-serpentine  Continuous copper tube
     curved-corner-panel-1..3
     electrical-lid
       lid-front / lid-return / lid-rounded-corner / fasteners
@@ -53,7 +55,8 @@ heat-pump
     fan-rotor                    Rotate this group around local Y
       fan-hub / fan-blade-0..4
     fan-guard
-    internals                    Empty attachment group for new components
+    internals                    Attachment group for internal models
+      compressor                 Centered at X/Z = 0, Y = 0.086 m
   support-legs
 ```
 

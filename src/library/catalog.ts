@@ -5,6 +5,7 @@ import {
   createTurntable,
 } from '../animations/turntable';
 import { requireValue } from '../core/require-value';
+import { createCoil } from '../models/coil';
 import { createCompressor } from '../models/components/compressor';
 import { createHeatPump } from '../models/heat-pump';
 import type { createStudio } from '../scenes/studio';
@@ -55,6 +56,16 @@ export const models: ModelEntry[] = [
     target: [0, 0.55, 0],
   },
   {
+    id: 'heat-pump-coil-v1',
+    name: 'Serpentín',
+    version: 'V1 · Intercambiador de calor',
+    description:
+      'Serpentín continuo de cobre con aletas verticales de aluminio y curvas alrededor del gabinete. Componente de la bomba de calor.',
+    create: createCoil,
+    camera: [1.8, 1.5, 2],
+    target: [0, 0.46, 0],
+  },
+  {
     id: 'compressor-v1',
     name: 'Compresor hermético',
     version: 'V1 · Referencia fotográfica',
@@ -71,7 +82,7 @@ export const animations: AnimationEntry[] = [
     name: 'Vista de 360°',
     description: 'Un giro de ocho segundos para explorar todo el exterior.',
     duration: 8,
-    modelIds: ['heat-pump-v1', 'compressor-v1'],
+    modelIds: ['heat-pump-v1', 'heat-pump-coil-v1', 'compressor-v1'],
     create: createTurntable,
   },
   {
