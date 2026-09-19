@@ -14,7 +14,7 @@ Preserve these decisions when extending the model:
 - Electrical cover stays flush with the body; only the small bottom water-connection pocket is recessed.
 - Two hollow white PVC water sockets, not metallic refrigerant fittings.
 - Actual opening through the top deck, five complete fan blades beneath a concentric guard. No solid interior block obscuring the blades.
-- The compressor is centered on the interior floor, using the standalone compressor model at its original scale.
+- The compressor and titanium pool heat exchanger form a centered diagonal pair on the interior floor, both at their standalone scale. The compressor sits left/front; the taller exchanger sits right/back. Both placements and orientations are turned 15° counterclockwise around the shared centre, bringing the compressor forward and the exchanger farther back.
 
 ## Coordinates and current envelope
 
@@ -56,7 +56,8 @@ heat-pump
       fan-hub / fan-blade-0..4
     fan-guard
     internals                    Attachment group for internal models
-      compressor                 Centered at X/Z = 0, Y = 0.086 m
+      compressor                 X ≈ -0.1094, Y = 0.086, Z ≈ 0.1328 m; yaw 15°
+      titanium-heat-exchanger     X ≈ 0.1094, Y = 0.093, Z ≈ -0.1328 m; yaw 15°
   support-legs
 ```
 

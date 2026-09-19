@@ -4,11 +4,10 @@ Open **Biblioteca** in the top navigation. The menu separates:
 
 - **Modelos**: physical product assemblies to inspect.
 - **Presentaciones**: complete presentations, each tied to one model and its camera/lighting sequence.
-- **Animaciones**: reusable motions, with an explicit list of compatible model IDs.
 
-Search filters the active collection. Opening a model enters inspection mode. Opening a showcase plays its film. Opening an animation runs it on the selected model when compatible, otherwise on its first compatible model. Reduced-motion users remain paused. Opening the menu pauses playback; close it and press Reproducir to continue.
+Search filters the active collection. Opening a model enters a still inspection view with contextual action buttons below the viewport. Only compatible actions appear: for example, **Mostrar interior** for the titanium exchanger and **Activar ventilador** for the heat pump. Click an active action again to restore the resting model. Opening a showcase plays its film; its composed animation remains owned by the presentation. Reduced-motion users remain paused for continuous actions; held inspection poses are applied immediately. Opening the menu pauses playback; close it and press Reproducir to continue.
 
-The active model and experience appear beside the Biblioteca button. URL parameters (`mode`, `model`, `animation`, `showcase`) preserve selection when reloading or copying a local preview link. Invalid or stale IDs fall back to valid entries. The library does not upload, create or edit assets; new entries are registered in code.
+The active model and experience appear beside the Biblioteca button. URL parameters (`mode`, `model`, `animation`, `showcase`) preserve selection when reloading or copying a local preview link. Invalid model or showcase IDs fall back to valid entries; missing or incompatible animation IDs leave the model at rest. The library does not upload, create or edit assets; new entries are registered in code.
 
 ## Add content
 
@@ -22,7 +21,7 @@ Add a `ModelEntry` with a stable ID, display name, description, version, synchro
 
 ### Animation
 
-Add an `AnimationEntry` with a stable ID, metadata, compatible `modelIds`, and a factory returning `{ duration, sample(seconds) }`. Sample absolute time and reset all animated properties deterministically. Include required named nodes in the model contract. No model-specific assumptions belong in the library UI. `fan-study`, for example, requires the `fan-rotor` node; the turntable acts on the product root.
+Add an `AnimationEntry` with a stable ID, an action-oriented button name, description, compatible `modelIds`, and a factory returning `{ duration, sample(seconds) }`. These entries appear as contextual model actions, not library cards. Set `holdAt` to an absolute sample time for a persistent inspection pose; omit it for a playable motion. Held poses hide playback controls. Only one inspection action is active at a time; reset clears it. Sample absolute time and reset all animated properties deterministically. Include required named nodes in the model contract. No model-specific assumptions belong in the library UI. `fan-study`, for example, requires the `fan-rotor` node; the turntable acts on the product root.
 
 ### Showcase
 
@@ -36,4 +35,4 @@ Add a `ShowcaseEntry` with its owning `modelId`, chapter captions, edition, dura
 
 The catalog currently bundles factories eagerly. As the library grows, migrate factory imports to dynamic imports and add loading/error states and cancellation for asynchronous selection. Keep the stable IDs and user-facing menu structure.
 
-Validate with `bun run build`, `bun test`, and browser checks for model → animation → showcase switching, search, keyboard dismissal, timeline reset, and reloadable links.
+Validate with `bun run build`, `bun test`, and browser checks for model → contextual action → showcase switching, search, keyboard dismissal, timeline reset, and reloadable links.

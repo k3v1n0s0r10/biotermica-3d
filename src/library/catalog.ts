@@ -34,6 +34,8 @@ export interface AnimationEntry {
   description: string;
   duration: number;
   modelIds: string[];
+  /** A held inspection pose instead of continuous playback. */
+  holdAt?: number;
   create(model: Group): AnimationSequence;
 }
 export interface ShowcaseEntry {
@@ -94,16 +96,17 @@ export const models: ModelEntry[] = [
 export const animations: AnimationEntry[] = [
   {
     id: 'exchanger-reveal',
-    name: 'Interior de titanio',
+    name: 'Mostrar interior',
     description:
-      'La carcasa se vuelve translúcida para mostrar el serpentín y el agua; después recupera su acabado azul.',
+      'Muestra el serpentín y el agua a través de la carcasa. Pulsa de nuevo para recuperar el exterior.',
     duration: exchangerRevealDuration,
+    holdAt: 6,
     modelIds: ['titanium-heat-exchanger-v1'],
     create: createExchangerReveal,
   },
   {
     id: 'turntable',
-    name: 'Vista de 360°',
+    name: 'Girar 360°',
     description: 'Un giro de ocho segundos para explorar todo el exterior.',
     duration: 8,
     modelIds: [
@@ -116,7 +119,7 @@ export const animations: AnimationEntry[] = [
   },
   {
     id: 'fan-study',
-    name: 'Movimiento del ventilador',
+    name: 'Activar ventilador',
     description:
       'Explora el rotor de cinco aspas en movimiento con el gabinete quieto.',
     duration: fanDuration,
@@ -187,8 +190,7 @@ export function resolveSelection(input: Partial<Selection>): Selection {
   const compatible = animations.filter((entry) =>
     entry.modelIds.includes(model.id),
   );
-  const animation =
-    compatible.find((entry) => entry.id === input.animationId) ?? compatible[0];
+  const animation = compatible.find((entry) => entry.id === input.animationId);
   return {
     mode,
     modelId: model.id,

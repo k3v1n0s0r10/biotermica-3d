@@ -1,11 +1,8 @@
 import { requireValue } from '../core/require-value';
-import { animations, models, type Selection, showcases } from './catalog';
+import { models, type Selection, showcases } from './catalog';
 
-type LibraryEntry =
-  | (typeof models)[number]
-  | (typeof showcases)[number]
-  | (typeof animations)[number];
-type Category = 'models' | 'showcases' | 'animations';
+type LibraryEntry = (typeof models)[number] | (typeof showcases)[number];
+type Category = 'models' | 'showcases';
 function resultCount(count: number) {
   return `${count} ${count === 1 ? 'elemento' : 'elementos'}`;
 }
@@ -37,30 +34,19 @@ export function createLibrary(
     const selectedIds = {
       models: current.modelId,
       showcases: current.mode === 'showcase' ? current.showcaseId : '',
-      animations: current.mode === 'studio' ? current.animationId : '',
     };
     return selectedIds[category] === id;
   }
   function selectEntry(id: string) {
     dialog.close();
-    if (category === 'models') onSelect({ mode: 'studio', modelId: id });
-    else if (category === 'showcases')
-      onSelect({ mode: 'showcase', showcaseId: id });
-    else {
-      const animation = requireValue(animations.find((item) => item.id === id));
-      onSelect({
-        mode: 'studio',
-        animationId: animation.id,
-        modelId: animation.modelIds.includes(current.modelId)
-          ? current.modelId
-          : animation.modelIds[0],
-      });
-    }
+    if (category === 'models')
+      onSelect({ mode: 'studio', modelId: id, animationId: '' });
+    else onSelect({ mode: 'showcase', showcaseId: id, animationId: '' });
   }
   function entryMetadata(entry: LibraryEntry) {
     return category === 'models'
       ? requireValue(models.find((model) => model.id === entry.id)).version
-      : `${'duration' in entry ? entry.duration : ''} s · ${category === 'showcases' ? 'Presentación' : 'Estudio de movimiento'}`;
+      : `${'duration' in entry ? entry.duration : ''} s · Presentación`;
   }
   function createCard(entry: LibraryEntry) {
     const card = document.createElement('button');
@@ -70,9 +56,7 @@ export function createLibrary(
     const artwork = document.createElement('span');
     artwork.className = `card-art ${category}`;
     artwork.setAttribute('aria-hidden', 'true');
-    artwork.textContent = { models: '▧', showcases: '▷', animations: '↻' }[
-      category
-    ];
+    artwork.textContent = { models: '▧', showcases: '▷' }[category];
     const meta = document.createElement('span');
     meta.className = 'card-meta';
     meta.textContent = entryMetadata(entry);
@@ -86,7 +70,6 @@ export function createLibrary(
     action.textContent = {
       models: 'Inspeccionar modelo ↗',
       showcases: 'Ver presentación ↗',
-      animations: 'Reproducir animación ↗',
     }[category];
     card.append(artwork, meta, heading, description, action);
     card.addEventListener('click', () => selectEntry(entry.id));
@@ -94,7 +77,7 @@ export function createLibrary(
   }
   function render() {
     cards.replaceChildren();
-    const entries = { models, showcases, animations }[category];
+    const entries = { models, showcases }[category];
     const matches = entries.filter((entry) =>
       `${entry.name} ${entry.description}`
         .toLowerCase()
@@ -103,7 +86,6 @@ export function createLibrary(
     title.textContent = {
       models: 'Modelos',
       showcases: 'Presentaciones',
-      animations: 'Animaciones',
     }[category];
     count.textContent = resultCount(matches.length);
     for (const tab of tabs) {
@@ -125,7 +107,8 @@ export function createLibrary(
     tab.addEventListener(
       'click',
       () => {
-        category = tab.dataset.category as Category;
+        category =
+          tab.dataset.category === 'showcases' ? 'showcases' : 'models';
         search.value = '';
         render();
       },
@@ -141,7 +124,6 @@ export function createLibrary(
   for (const [key, entries] of Object.entries({
     models,
     showcases,
-    animations,
   })) {
     requireValue(document.querySelector(`[data-count="${key}"]`)).textContent =
       String(entries.length).padStart(2, '0');

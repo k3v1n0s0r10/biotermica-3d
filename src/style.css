@@ -433,10 +433,6 @@ output {
   background: linear-gradient(135deg, #42354c, #89685d);
   color: #eedbd0;
 }
-.card-art.animations {
-  background: linear-gradient(135deg, #324758, #4f8080);
-  color: #c2e7df;
-}
 .library-card strong,
 .card-description,
 .card-meta,
@@ -631,8 +627,7 @@ input {
   border-color: var(--brand-blue);
   box-shadow: 0 0 0 1px var(--brand-blue);
 }
-.card-art,
-.card-art.animations {
+.card-art {
   background: linear-gradient(135deg, #e5f7fc, #77cbdf);
   color: var(--brand-deep-blue);
 }
@@ -695,4 +690,17 @@ input {
 }
 .showcase .index-line {
   background: #a2e3f388;
+}
+
+#model-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #f6f8f7;
+  border-top: 1px solid #d9e1df;
+  font-size: 12px;
+}
+#model-actions[hidden] {
+  display: none;
 }

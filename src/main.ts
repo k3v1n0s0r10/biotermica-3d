@@ -2,6 +2,7 @@ import { requireValue } from './core/require-value';
 import './style.css';
 import { loopTime } from './animations/turntable';
 import { createViewer } from './core/viewer';
+import { renderModelActions } from './library/actions';
 import {
   type AnimationEntry,
   animations,
@@ -86,7 +87,7 @@ const pause = () => {
   play.textContent = 'Reproducir';
 };
 const start = () => {
-  if (playing || !viewer) return;
+  if (playing || !viewer || play.disabled) return;
   playing = true;
   play.textContent = 'Pausar';
   startedAt = performance.now() - seconds * 1000;
@@ -107,7 +108,11 @@ function updateControls(
   );
   const modelFilms = showcases.filter((entry) => entry.modelId === model.id);
   filmButton.disabled = !modelFilms.length;
-  play.disabled = slider.disabled = selection.mode === 'studio' && !animation;
+  const hasPlayback =
+    selection.mode === 'showcase' ||
+    (!!animation && animation.holdAt === undefined);
+  play.disabled = slider.disabled = !hasPlayback;
+  play.hidden = slider.hidden = output.hidden = !hasPlayback;
   reset.disabled = false;
   slider.max = String(requireValue(viewer).duration);
 }
@@ -121,7 +126,7 @@ function updateLabels(
   requireValue(document.querySelector('#active-experience')).textContent =
     selection.mode === 'showcase'
       ? film.name
-      : (animation?.name ?? 'Inspection');
+      : (animation?.name ?? 'Inspección');
   requireValue(document.querySelector('#film-name')).textContent =
     film.name.toUpperCase();
   requireValue(document.querySelector('#film-edition-name')).textContent =
@@ -161,9 +166,27 @@ function showSelectionError(error: unknown) {
   viewer?.dispose();
   viewer = undefined;
   document.body.classList.remove('showcase');
+  requireValue(document.querySelector<HTMLElement>('#model-actions')).hidden =
+    true;
   viewport.textContent =
     'This item could not be opened. Choose another item from the library or reload.';
   play.disabled = reset.disabled = slider.disabled = true;
+}
+function finishSelection(
+  model: ModelEntry,
+  film: ShowcaseEntry,
+  animation: AnimationEntry | undefined,
+  autoplay: boolean,
+) {
+  seconds = selection.mode === 'studio' ? (animation?.holdAt ?? 0) : 0;
+  lastChapter = -1;
+  requireValue(viewer).setMode(selection.mode);
+  updateControls(model, animation);
+  updateLabels(model, film, animation);
+  updateLocation(model, film);
+  renderModelActions(selection, (animationId) => select({ animationId }, true));
+  draw();
+  autoplaySelection(autoplay);
 }
 function select(input: Partial<Selection>, autoplay = false) {
   pause();
@@ -184,19 +207,12 @@ function select(input: Partial<Selection>, autoplay = false) {
       showcase: next.mode === 'showcase' ? film : undefined,
     });
     selection = next;
-    seconds = 0;
-    lastChapter = -1;
-    viewer.setMode(selection.mode);
-    updateControls(model, animation);
-    updateLabels(model, film, animation);
-    updateLocation(model, film);
-    draw();
-    autoplaySelection(autoplay);
+    finishSelection(model, film, animation, autoplay);
   } catch (error) {
     showSelectionError(error);
   }
 }
-const library = createLibrary((input) => select(input, !!input.animationId));
+const library = createLibrary((input) => select(input));
 play.addEventListener('click', () => (playing ? pause() : start()), {
   signal: events.signal,
 });
@@ -212,6 +228,10 @@ slider.addEventListener(
 reset.addEventListener(
   'click',
   () => {
+    if (selection.mode === 'studio' && selection.animationId) {
+      select({ animationId: '' });
+      return;
+    }
     pause();
     seconds = 0;
     viewer?.resetView();

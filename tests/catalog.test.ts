@@ -29,10 +29,7 @@ test('stale selection links fall back to valid items while valid animation selec
     showcaseId: 'removed-film',
   });
   expect(models.some((model) => model.id === fallback.modelId)).toBe(true);
-  expect(
-    animations.find((animation) => animation.id === fallback.animationId)
-      ?.modelIds,
-  ).toContain(fallback.modelId);
+  expect(fallback.animationId).toBe('');
   const chosen = resolveSelection({ ...fallback, animationId: 'fan-study' });
   expect(chosen.animationId).toBe('fan-study');
   const film = resolveSelection({ ...chosen, mode: 'showcase' });
@@ -40,4 +37,22 @@ test('stale selection links fall back to valid items while valid animation selec
     requireValue(showcases.find((entry) => entry.id === film.showcaseId))
       .modelId,
   );
+});
+
+test('inspection starts idle and incompatible actions never change the model', () => {
+  const modelId = 'titanium-heat-exchanger-v1';
+  expect(resolveSelection({ mode: 'studio', modelId }).animationId).toBe('');
+  const selection = resolveSelection({
+    mode: 'studio',
+    modelId,
+    animationId: 'fan-study',
+  });
+  expect(selection.modelId).toBe(modelId);
+  expect(selection.animationId).toBe('');
+  const active = resolveSelection({
+    ...selection,
+    animationId: 'exchanger-reveal',
+  });
+  expect(active.animationId).toBe('exchanger-reveal');
+  expect(resolveSelection({ ...active, animationId: '' }).animationId).toBe('');
 });

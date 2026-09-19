@@ -10,9 +10,11 @@ import {
   Path,
   Shape,
   TorusGeometry,
+  Vector3,
 } from 'three';
 import { createCoil } from './coil';
 import { createCompressor } from './components/compressor';
+import { createTitaniumHeatExchanger } from './components/titanium-heat-exchanger';
 
 /** Reference-based concept, in metres. +Y up, service corner at +X/+Z.
  * Dimensions are illustrative, not manufacturing measurements.
@@ -352,9 +354,17 @@ export function createHeatPump() {
   internals.name = 'internals';
   const compressor = createCompressor();
   // Foot undersides are at local Y = 0.007; the interior floor top is 0.093.
-  compressor.position.set(0, 0.086, 0);
-  internals.add(compressor);
-  cabinet.add(internals);
+  compressor.position.set(-0.14, 0.086, 0.1);
+  const exchanger = createTitaniumHeatExchanger();
+  // A centered diagonal pair on the floor: compressor left/front, exchanger right/back.
+  // The exchanger's mounting tabs start at local Y = 0.
+  exchanger.position.set(0.14, 0.093, -0.1);
+  // Turn the pair counterclockwise in plan while keeping its shared centre fixed.
+  for (const component of [compressor, exchanger]) {
+    component.position.applyAxisAngle(new Vector3(0, 1, 0), Math.PI / 12);
+    component.rotation.y = Math.PI / 12;
+  }
+  internals.add(compressor, exchanger);
   cabinet.position.y = -0.0325; // Base underside at 1 cm above the floor.
   product.add(cabinet);
   const stand = new Group();
@@ -372,5 +382,7 @@ export function createHeatPump() {
       object.receiveShadow = true;
     }
   });
+  // Component factories retain ownership of their own shadow/material settings.
+  cabinet.add(internals);
   return product;
 }

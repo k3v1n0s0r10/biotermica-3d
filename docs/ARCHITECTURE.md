@@ -25,8 +25,8 @@ Models and animations must be reusable and composable. Showcases are the final c
 - Keep each showcase in its own descriptively named file under `src/showcases/`, such as `heat-pump-cycle.ts`.
 - A showcase chooses the assembled model, composes reusable animations and effects, and coordinates their timing with camera, lighting and chapter direction.
 - Showcases are complete presentations, not reusable building blocks for models, animations or other showcases. Models and animations must not import showcase modules. Extract reusable behavior into the appropriate lower layer when another presentation needs it.
-- Register complete products, selectable animations and showcases in `src/library/catalog.ts`. Keep the catalog focused on discovery, compatibility and metadata.
+- Register complete products, contextual animation actions and showcases in `src/library/catalog.ts`. Keep the catalog focused on discovery, compatibility and metadata.
 
-These are extension rules, not a claim that every existing mesh is already a separate model. Extract components when they need independent reuse. The current library selects one inspection animation at a time; simultaneous animation composition belongs in sequence code until the UI explicitly supports it.
+These are extension rules, not a claim that every existing mesh is already a separate model. Extract components when they need independent reuse. The inspection view exposes compatible actions for the selected model, with one active at a time; simultaneous animation composition belongs in sequence code until the UI explicitly supports it.
 
 See [MODEL-GUIDE.md](MODEL-GUIDE.md) for coordinates and attachment points, [LIBRARY.md](LIBRARY.md) for registration, and [SHOWCASE.md](SHOWCASE.md) for the current presentation.
