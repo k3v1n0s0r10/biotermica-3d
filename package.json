@@ -3,8 +3,10 @@
   "type": "module",
   "private": true,
   "devDependencies": {
+    "@biomejs/biome": "2.5.14",
     "@types/bun": "latest",
     "@types/three": "^0.186.0",
+    "fallow": "3.27.0",
     "vite": "^8.3.0",
     "wrangler": "^4.134.0"
   },
@@ -14,9 +16,17 @@
   },
   "scripts": {
     "dev": "bun --bun vite --host 127.0.0.1",
-    "build": "bun run typecheck && bun --bun vite build",
+    "build": "bun run check && bun --bun vite build",
     "preview": "bun --bun vite preview --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
-    "test": "bun test"
+    "test": "bun test",
+    "format": "biome format --write .",
+    "lint": "biome check --error-on-warnings .",
+    "lint:fix": "biome check --write --error-on-warnings .",
+    "analyze": "fallow dead-code --fail-on-issues && fallow health --complexity --fail-on-issues && bun run analyze:dupes",
+    "analyze:json": "fallow --format json --fail-on-issues",
+    "check": "bun run lint && bun run analyze && bun run typecheck",
+    "validate": "bun test && bun run build",
+    "analyze:dupes": "bun scripts/check-duplicates.ts"
   }
 }

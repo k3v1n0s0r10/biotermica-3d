@@ -1,11 +1,22 @@
-import { ACESFilmicToneMapping, PCFSoftShadowMap, PerspectiveCamera, PMREMGenerator, SRGBColorSpace, WebGLRenderer } from 'three';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import {
+  ACESFilmicToneMapping,
+  PCFSoftShadowMap,
+  PerspectiveCamera,
+  PMREMGenerator,
+  SRGBColorSpace,
+  WebGLRenderer,
+} from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import type { AnimationEntry, ModelEntry, ShowcaseEntry } from '../library/catalog';
 import { createStudio } from '../scenes/studio';
-import type { ModelEntry, AnimationEntry, ShowcaseEntry } from '../library/catalog';
 import { disposeObject } from './dispose';
+import { requireValue } from './require-value';
 
-export function createViewer(container: HTMLElement, options: { model: ModelEntry; animation?: AnimationEntry; showcase?: ShowcaseEntry }) {
+export function createViewer(
+  container: HTMLElement,
+  options: { model: ModelEntry; animation?: AnimationEntry; showcase?: ShowcaseEntry },
+) {
   const renderer = new WebGLRenderer({ antialias: true });
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.toneMapping = ACESFilmicToneMapping;
@@ -48,43 +59,55 @@ export function createViewer(container: HTMLElement, options: { model: ModelEntr
     render();
   });
   resize.observe(container);
+  function resetStudio() {
+    const fan = product.getObjectByName('fan-rotor');
+    if (fan) fan.rotation.y = 0;
+    (scene.background as import('three').Color).setHex(0xe9eeed);
+    requireValue(scene.fog).color.setHex(0xe9eeed);
+    stage.floor.material.color.setHex(0xe9eeed);
+    stage.floor.material.roughness = 1;
+    stage.floor.material.metalness = 0;
+    scene.environmentIntensity = 0.7;
+    stage.ambient.intensity = 2;
+    stage.key.color.setHex(0xfff5e8);
+    stage.key.intensity = 3;
+    stage.key.position.set(3, 5, 4);
+    stage.fill.intensity = stage.rim.intensity = 0;
+  }
   return {
-    get duration() { return mode === 'showcase' ? showcase!.duration : sequence.duration; },
+    get duration() {
+      return mode === 'showcase' ? requireValue(showcase).duration : sequence.duration;
+    },
     setMode(next: 'showcase' | 'studio') {
       mode = next === 'showcase' && showcase ? 'showcase' : 'studio';
       controls.enabled = mode === 'studio';
       if (mode === 'studio') {
         controls.reset();
         product.rotation.y = 0;
-        const fan = product.getObjectByName('fan-rotor');
-        if (fan) fan.rotation.y = 0;
-        (scene.background as import('three').Color).setHex(0xe9eeed);
-        scene.fog!.color.setHex(0xe9eeed);
-        stage.floor.material.color.setHex(0xe9eeed);
-        stage.floor.material.roughness = 1;
-        stage.floor.material.metalness = 0;
-        scene.environmentIntensity = 0.7;
-        stage.ambient.intensity = 2;
-        stage.key.color.setHex(0xfff5e8);
-        stage.key.intensity = 3;
-        stage.key.position.set(3, 5, 4);
-        stage.fill.intensity = stage.rim.intensity = 0;
+        resetStudio();
       }
     },
     renderAt(seconds: number) {
       lastSampleTime = seconds;
-      const chapter = mode === 'showcase' ? showcase?.sample(seconds) : (sequence.sample(seconds), 0);
+      let chapter = 0;
+      if (mode === 'showcase') chapter = showcase?.sample(seconds) ?? 0;
+      else sequence.sample(seconds);
       render();
       return chapter ?? 0;
     },
-    resetView() { controls.reset(); render(); },
+    resetView() {
+      controls.reset();
+      render();
+    },
     dispose() {
       resize.disconnect();
       controls.removeEventListener('change', render);
       controls.dispose();
       disposeObject(scene);
       environment.dispose();
-      scene.traverse(object => { if ('shadow' in object) (object as import('three').DirectionalLight).shadow?.dispose(); });
+      scene.traverse((object) => {
+        if ('shadow' in object) (object as import('three').DirectionalLight).shadow?.dispose();
+      });
       renderer.dispose();
       renderer.domElement.remove();
     },

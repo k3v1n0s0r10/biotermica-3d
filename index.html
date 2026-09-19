@@ -1,35 +1,81 @@
 <!doctype html>
 <html lang="es">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#073c52"><title>Heat pump — Form in motion</title></head>
-<body class="showcase">
-<nav class="workspace-bar" aria-label="Product workspace">
-  <button id="library-open" aria-haspopup="dialog">▦ &nbsp; Biblioteca</button>
-  <span class="workspace-divider"></span><span id="active-model">Heat pump</span><span class="breadcrumb">/</span><strong id="active-experience">Form in motion</strong>
-</nav>
-<dialog id="library-dialog" aria-labelledby="library-title">
-  <div class="library-heading"><div><span class="library-eyebrow">BIOTÉRMICA · ESTUDIO DE PRODUCTO</span><h2 id="library-title">Biblioteca de producto</h2></div><button id="library-close" aria-label="Close library">✕</button></div>
-  <div class="library-layout">
-    <nav class="library-nav" aria-label="Library categories">
-      <button data-category="models" aria-pressed="true">Modelos <span data-count="models"></span></button>
-      <button data-category="showcases" aria-pressed="false">Presentaciones <span data-count="showcases"></span></button>
-      <button data-category="animations" aria-pressed="false">Animaciones <span data-count="animations"></span></button>
-      <p>Explora el producto.<br>Descubre su movimiento.<br>Cuenta su historia.</p>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#073c52">
+    <title>Heat pump — Form in motion</title>
+  </head>
+  <body class="showcase">
+    <nav class="workspace-bar" aria-label="Product workspace">
+      <button type="button" id="library-open" aria-haspopup="dialog">▦ &nbsp; Biblioteca</button>
+      <span class="workspace-divider"></span><span id="active-model">Heat pump</span
+      ><span class="breadcrumb">/</span><strong id="active-experience">Form in motion</strong>
     </nav>
-    <section class="library-content"><label class="sr-only" for="library-search">Search library</label><input id="library-search" type="search" placeholder="Buscar en esta colección…"><div class="collection-heading"><h3 id="library-category-title">Modelos</h3><span id="library-count"></span></div><div id="library-cards"></div></section>
-  </div>
-</dialog>
-<main id="viewport" aria-label="3D product showcase"></main>
-<div class="film-overlay" aria-hidden="true">
-  <div class="film-brand"><img src="/brand/biotermica-logo.webp" alt=""><div><strong>BIOTÉRMICA</strong><small>AGUA MÁS CÁLIDA · DÍAS MÁS FELICES</small></div></div>
-  <div class="film-edition"><span id="film-name">EL CALOR DEL AIRE, EN TU AGUA</span><br><span id="film-edition-name">TECNOLOGÍA PARA DISFRUTAR</span></div>
-  <div class="film-copy"><div id="chapter">01 — THE REVEAL</div><h1 id="headline">A new<br>perspective.</h1><p id="caption">A study in form, detail and movement.</p></div>
-  <div class="film-index"><span id="chapter-number">01</span><span class="index-line"></span><span id="chapter-total">04</span></div>
-</div>
-<footer>
-  <div class="mode-switch" role="group" aria-label="Viewer mode"><button id="showcase" aria-pressed="true">Presentación</button><button id="studio" aria-pressed="false">Inspeccionar</button></div>
-  <button id="play">Pausar</button><button id="reset" aria-label="Restart animation">↺</button>
-  <label class="sr-only" for="timeline">Animation timeline</label><input id="timeline" type="range" min="0" max="24" step="0.001" value="0"><output id="time">0.00 / 24.00 s</output>
-  <small id="hint">24-second film · Drag timeline to explore</small>
-</footer>
-<script type="module" src="/src/main.ts"></script>
-</body></html>
+    <dialog id="library-dialog" aria-labelledby="library-title">
+      <div class="library-heading">
+        <div>
+          <span class="library-eyebrow">BIOTÉRMICA · ESTUDIO DE PRODUCTO</span>
+          <h2 id="library-title">Biblioteca de producto</h2>
+        </div>
+        <button type="button" id="library-close" aria-label="Close library">✕</button>
+      </div>
+      <div class="library-layout">
+        <nav class="library-nav" aria-label="Library categories">
+          <button type="button" data-category="models" aria-pressed="true">
+            Modelos <span data-count="models"></span>
+          </button>
+          <button type="button" data-category="showcases" aria-pressed="false">
+            Presentaciones <span data-count="showcases"></span>
+          </button>
+          <button type="button" data-category="animations" aria-pressed="false">
+            Animaciones <span data-count="animations"></span>
+          </button>
+          <p>Explora el producto.<br>Descubre su movimiento.<br>Cuenta su historia.</p>
+        </nav>
+        <section class="library-content">
+          <label class="sr-only" for="library-search">Search library</label>
+          <input id="library-search" type="search" placeholder="Buscar en esta colección…">
+          <div class="collection-heading">
+            <h3 id="library-category-title">Modelos</h3>
+            <span id="library-count"></span>
+          </div>
+          <div id="library-cards"></div>
+        </section>
+      </div>
+    </dialog>
+    <main id="viewport" aria-label="3D product showcase"></main>
+    <div class="film-overlay" aria-hidden="true">
+      <div class="film-brand">
+        <img src="/brand/biotermica-logo.webp" alt="">
+        <div><strong>BIOTÉRMICA</strong><small>AGUA MÁS CÁLIDA · DÍAS MÁS FELICES</small></div>
+      </div>
+      <div class="film-edition">
+        <span id="film-name">EL CALOR DEL AIRE, EN TU AGUA</span><br>
+        <span id="film-edition-name">TECNOLOGÍA PARA DISFRUTAR</span>
+      </div>
+      <div class="film-copy">
+        <div id="chapter">01 — THE REVEAL</div>
+        <h1 id="headline">A new<br>perspective.</h1>
+        <p id="caption">A study in form, detail and movement.</p>
+      </div>
+      <div class="film-index">
+        <span id="chapter-number">01</span><span class="index-line"></span
+        ><span id="chapter-total">04</span>
+      </div>
+    </div>
+    <footer>
+      <fieldset class="mode-switch" aria-label="Viewer mode">
+        <button type="button" id="showcase" aria-pressed="true">Presentación</button
+        ><button type="button" id="studio" aria-pressed="false">Inspeccionar</button>
+      </fieldset>
+      <button type="button" id="play">Pausar</button
+      ><button type="button" id="reset" aria-label="Restart animation">↺</button>
+      <label class="sr-only" for="timeline">Animation timeline</label>
+      <input id="timeline" type="range" min="0" max="24" step="0.001" value="0">
+      <output id="time">0.00 / 24.00 s</output>
+      <small id="hint">24-second film · Drag timeline to explore</small>
+    </footer>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

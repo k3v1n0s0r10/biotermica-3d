@@ -1,23 +1,25 @@
 import { expect, test } from 'bun:test';
-import { PerspectiveCamera, Color, Vector3 } from 'three';
+import { type Color, PerspectiveCamera, Vector3 } from 'three';
+import { disposeObject } from '../src/core/dispose';
+import { requireValue } from '../src/core/require-value';
+import { animations, models } from '../src/library/catalog';
 import { createStudio } from '../src/scenes/studio';
 import { createHeatPumpCycle } from '../src/showcases/heat-pump-cycle';
-import { disposeObject } from '../src/core/dispose';
-import { animations, models } from '../src/library/catalog';
 
 test('showcase shares the inspection fan motion while retaining cabinet choreography', () => {
   const stage = createStudio();
-  const model = models[0]!.create();
-  const study = animations.find(entry => entry.id === 'fan-study')!.create(model);
+  const model = requireValue(models[0]).create();
+  const study = requireValue(animations.find((entry) => entry.id === 'fan-study')).create(model);
   const film = createHeatPumpCycle(stage, new PerspectiveCamera(35, 16 / 9));
   for (const time of [0.3, 1.1, 5.99, 6, 9.65, 23.99, 24, -0.3]) {
     study.sample(time);
     film.sample(time);
-    expect(stage.product.getObjectByName('fan-rotor')!.rotation.y)
-      .toBeCloseTo(model.getObjectByName('fan-rotor')!.rotation.y);
+    expect(requireValue(stage.product.getObjectByName('fan-rotor')).rotation.y).toBeCloseTo(
+      requireValue(model.getObjectByName('fan-rotor')).rotation.y,
+    );
   }
   study.sample(0.3);
-  expect(model.getObjectByName('fan-rotor')!.rotation.y).toBeCloseTo(Math.PI);
+  expect(requireValue(model.getObjectByName('fan-rotor')).rotation.y).toBeCloseTo(Math.PI);
   film.sample(8);
   expect(stage.product.rotation.y).toBeCloseTo(0.5);
   expect(model.rotation.y).toBe(0);
@@ -30,11 +32,13 @@ test('showcase reproduces camera, product, fan and lighting after arbitrary seek
   const camera = new PerspectiveCamera(35, 16 / 9);
   const film = createHeatPumpCycle(stage, camera);
   const state = () => ({
-    camera: camera.position.toArray(), rotation: camera.quaternion.toArray(),
+    camera: camera.position.toArray(),
+    rotation: camera.quaternion.toArray(),
     product: stage.product.rotation.y,
-    fan: stage.product.getObjectByName('fan-rotor')!.rotation.y,
+    fan: requireValue(stage.product.getObjectByName('fan-rotor')).rotation.y,
     background: (stage.scene.background as Color).getHex(),
-    accent: stage.fill.color.getHex(), key: stage.key.position.toArray(),
+    accent: stage.fill.color.getHex(),
+    key: stage.key.position.toArray(),
   });
   film.sample(9.25);
   const expected = state();
@@ -50,8 +54,8 @@ test('showcase reproduces camera, product, fan and lighting after arbitrary seek
     expect(camera.position.y).toBeGreaterThan(0);
     expect(camera.position.toArray().every(Number.isFinite)).toBe(true);
   }
-  const cabinet = stage.product.getObjectByName('cabinet')!;
-  const internals = stage.product.getObjectByName('internals')!;
+  const cabinet = requireValue(stage.product.getObjectByName('cabinet'));
+  const internals = requireValue(stage.product.getObjectByName('internals'));
   expect(internals.parent).toBe(cabinet);
   stage.product.updateMatrixWorld(true);
   expect(internals.getWorldPosition(new Vector3()).y).toBeCloseTo(-0.0325);

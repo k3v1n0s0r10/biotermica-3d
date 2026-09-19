@@ -6,8 +6,11 @@ export async function loadModel(path: string) {
   const url = `${import.meta.env.BASE_URL}${path.replace(/^\//, '')}`;
   try {
     const gltf = await new GLTFLoader().loadAsync(url);
-    gltf.scene.traverse(object => {
-      if (object instanceof Mesh) { object.castShadow = true; object.receiveShadow = true; }
+    gltf.scene.traverse((object) => {
+      if (object instanceof Mesh) {
+        object.castShadow = true;
+        object.receiveShadow = true;
+      }
     });
     return gltf;
   } catch (cause) {

@@ -16,7 +16,10 @@ export interface AnimationSequence {
 export function createTurntable(product: Object3D, duration = 8): AnimationSequence {
   loopTime(0, duration);
   const initialRotation = product.rotation.y;
-  return { duration, sample(seconds) {
-    product.rotation.y = initialRotation + loopTime(seconds, duration) / duration * Math.PI * 2;
-  } };
+  return {
+    duration,
+    sample(seconds) {
+      product.rotation.y = initialRotation + (loopTime(seconds, duration) / duration) * Math.PI * 2;
+    },
+  };
 }

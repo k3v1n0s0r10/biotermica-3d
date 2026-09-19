@@ -29,6 +29,43 @@ bun run preview
 
 Production files are written to `dist/`. Bun manages dependencies and runs tooling; Three.js renders in the browser (WebGL 2 required).
 
+## Code quality and agent workflow
+
+Biome 2.5.14 handles formatting, linting, and import organization. Fallow 3.27.0
+checks dead code, complexity, and duplication. Both are pinned in `package.json`
+and `bun.lock`; TypeScript remains responsible for type checking.
+
+```sh
+bun run format        # Apply formatting
+bun run lint:fix      # Apply formatting and safe lint/import fixes
+bun run lint          # Check without changing files; warnings fail
+bun run analyze       # Fallow gates across the entire project
+bun run analyze:json  # Full Fallow evidence for agents, as JSON
+bun run check         # Biome + Fallow + TypeScript
+bun run validate      # Tests + all static checks + production build
+```
+
+`bun run build` includes the static gates. The GitHub Actions `Quality` workflow
+runs `bun run validate` on pushes and pull requests. Repository administrators can
+require its `validate` job in branch protection to block merging failed checks.
+
+Agents must follow [AGENTS.md](AGENTS.md): inspect affected code, resolve all tool
+warnings/errors, and pass validation before reporting completion. Rules must not
+be weakened or findings hidden to make checks pass. Fallow's informational scores,
+churn metrics, and refactoring suggestions guide investigation; its configured
+findings are enforced with nonzero exits. A small JSON-report gate enforces zero
+duplicate groups because Fallow 3.27 does not fail `dupes --fail-on-issues` at
+its default unlimited duplication threshold. No inherited-issue baseline is used.
+
+The GLTF loader is an explicit Fallow entry because it is a documented extension
+API, although the current catalog builds its model procedurally. The browser
+entry and Bun tests are also explicit. Generated output, dependency directories,
+and Fallow caches are ignored; Biome excludes the bundled agent skill directories.
+
+For context before editing, run `bunx --no-install fallow inspect --file src/main.ts`.
+See the [Biome linter reference](https://biomejs.dev/linter/) and
+[Fallow CLI documentation](https://fallow.tools/docs/) for tool behavior.
+
 ## Structure
 
 ```text
@@ -44,7 +81,6 @@ src/
     dispose.ts         GPU resource cleanup for owned model assets
   models/
     heat-pump.ts       Square cabinet, corner lid, grilles, fan, service ports
-    placeholder.ts     Simple scale reference
     load-model.ts      Standard GLB/glTF loader
   scenes/
     studio.ts          Product assembly, studio lights, floor

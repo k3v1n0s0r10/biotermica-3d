@@ -1,5 +1,5 @@
 import type { Object3D } from 'three';
-import { loopTime, type AnimationSequence } from './turntable';
+import { type AnimationSequence, loopTime } from './turntable';
 
 export const fanDuration = 6;
 
@@ -10,7 +10,7 @@ export function createFanAnimation(model: Object3D): AnimationSequence {
   return {
     duration: fanDuration,
     sample(seconds) {
-      fan.rotation.y = loopTime(seconds, fanDuration) / fanDuration * Math.PI * 2 * 10;
+      fan.rotation.y = (loopTime(seconds, fanDuration) / fanDuration) * Math.PI * 2 * 10;
     },
   };
 }

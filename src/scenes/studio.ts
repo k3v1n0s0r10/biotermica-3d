@@ -1,4 +1,16 @@
-import { Color, DataTexture, LinearFilter, MeshBasicMaterial, Fog, DirectionalLight, HemisphereLight, Mesh, MeshStandardMaterial, PlaneGeometry, Scene } from 'three';
+import {
+  Color,
+  DataTexture,
+  DirectionalLight,
+  Fog,
+  HemisphereLight,
+  LinearFilter,
+  Mesh,
+  MeshBasicMaterial,
+  MeshStandardMaterial,
+  PlaneGeometry,
+  Scene,
+} from 'three';
 import { createHeatPump } from '../models/heat-pump';
 
 export function createStudio(product = createHeatPump()) {
@@ -22,7 +34,10 @@ export function createStudio(product = createHeatPump()) {
   const rim = new DirectionalLight(0xffc394, 0);
   rim.position.set(1, 3, -3);
   scene.add(fill, rim);
-  const floor = new Mesh(new PlaneGeometry(200, 200), new MeshStandardMaterial({ color: 0xe9eeed, roughness: 1 }));
+  const floor = new Mesh(
+    new PlaneGeometry(200, 200),
+    new MeshStandardMaterial({ color: 0xe9eeed, roughness: 1 }),
+  );
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = -0.001;
   floor.receiveShadow = true;
@@ -30,18 +45,26 @@ export function createStudio(product = createHeatPump()) {
   // Soft contact shading keeps the 1 cm feet visually grounded under broad studio light.
   const shadowSize = 64;
   const shadowPixels = new Uint8Array(shadowSize * shadowSize * 4);
-  for (let y = 0; y < shadowSize; y++) for (let x = 0; x < shadowSize; x++) {
-    const nx = (x / (shadowSize - 1) - 0.5) * 2;
-    const ny = (y / (shadowSize - 1) - 0.5) * 2;
-    const distance = Math.sqrt(nx * nx + ny * ny);
-    shadowPixels[(y * shadowSize + x) * 4 + 3] = Math.round(Math.pow(Math.max(0, 1 - distance), 1.7) * 170);
-  }
+  for (let y = 0; y < shadowSize; y++)
+    for (let x = 0; x < shadowSize; x++) {
+      const nx = (x / (shadowSize - 1) - 0.5) * 2;
+      const ny = (y / (shadowSize - 1) - 0.5) * 2;
+      const distance = Math.sqrt(nx * nx + ny * ny);
+      shadowPixels[(y * shadowSize + x) * 4 + 3] = Math.round(
+        Math.max(0, 1 - distance) ** 1.7 * 170,
+      );
+    }
   const contactTexture = new DataTexture(shadowPixels, shadowSize, shadowSize);
   contactTexture.minFilter = contactTexture.magFilter = LinearFilter;
   contactTexture.needsUpdate = true;
-  const contact = new Mesh(new PlaneGeometry(1.8, 1.8), new MeshBasicMaterial({
-    map: contactTexture, transparent: true, depthWrite: false,
-  }));
+  const contact = new Mesh(
+    new PlaneGeometry(1.8, 1.8),
+    new MeshBasicMaterial({
+      map: contactTexture,
+      transparent: true,
+      depthWrite: false,
+    }),
+  );
   contact.name = 'studio-contact-shadow';
   contact.rotation.x = -Math.PI / 2;
   contact.position.y = 0.0001;
