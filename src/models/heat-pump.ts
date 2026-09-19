@@ -208,6 +208,8 @@ export function createHeatPump() {
   box('pocket-ceiling', 0.23, 0.009, 0.23, 0.335, 0.249, 0.335, paint);
   box('pocket-floor', 0.23, 0.009, 0.23, 0.335, 0.092, 0.335, edge);
 
+  product.add(...createPocketCoilCovers(paint));
+
   // Hollow PVC water sockets with a thicker union collar and visible bore.
   function pipeGeometry(outer: number, inner: number, length: number) {
     const section = new Shape();
@@ -403,5 +405,25 @@ function createPocketBack() {
     depth: 0.009,
     bevelEnabled: false,
     curveSegments: 32,
+  });
+}
+
+/** Folded covers close the two exposed coil ends beside the service pocket. */
+function createPocketCoilCovers(material: MeshStandardMaterial) {
+  return (['front', 'right'] as const).map((side) => {
+    const cover = new Group();
+    cover.name = `pocket-${side}-mini-lid`;
+    const face = new Mesh(new BoxGeometry(0.044, 0.1655, 0.007), material);
+    face.name = 'mini-lid-face';
+    face.position.set(0.208, 0.17025, 0.4505);
+    const fold = new Mesh(new BoxGeometry(0.007, 0.1655, 0.05), material);
+    fold.name = 'mini-lid-return';
+    fold.position.set(0.2265, 0.17025, 0.422);
+    cover.add(face, fold);
+    if (side === 'right') {
+      cover.rotation.y = Math.PI / 2;
+      cover.scale.x = -1;
+    }
+    return cover;
   });
 }
