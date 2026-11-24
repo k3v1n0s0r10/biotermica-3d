@@ -1,0 +1,34 @@
+[
+  {
+    "id": "heat-pump-v1",
+    "root": "heat-pump",
+    "name": "Bomba de calor",
+    "category": "Ensamblaje",
+    "description": "Gabinete grafito, ventilador y conexiones de PVC.",
+    "video": true
+  },
+  {
+    "id": "heat-pump-coil-v1",
+    "root": "heat-exchanger",
+    "name": "Serpentín",
+    "category": "Componente",
+    "description": "Tubos de cobre y aletas de aluminio.",
+    "video": false
+  },
+  {
+    "id": "compressor-v1",
+    "root": "compressor",
+    "name": "Compresor hermético",
+    "category": "Componente",
+    "description": "Carcasa esmaltada, conexiones de cobre y cuatro apoyos.",
+    "video": false
+  },
+  {
+    "id": "titanium-heat-exchanger-v1",
+    "root": "titanium-heat-exchanger",
+    "name": "Intercambiador de titanio",
+    "category": "Componente",
+    "description": "Carcasa azul, uniones de agua y serpentín de titanio.",
+    "video": false
+  }
+]

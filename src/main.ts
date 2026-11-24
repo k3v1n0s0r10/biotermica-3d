@@ -1,285 +1,258 @@
+import type { ModelViewerElement } from '@google/model-viewer';
+import {
+  assetPath,
+  type PreviewMode,
+  type Product,
+  products,
+  resolveMode,
+  resolveProduct,
+} from './catalog';
 import { requireValue } from './core/require-value';
 import './style.css';
-import { loopTime } from './animations/turntable';
-import { createViewer } from './core/viewer';
-import { renderModelActions } from './library/actions';
-import { createBackgroundChoice } from './library/background';
-import {
-  type AnimationEntry,
-  animations,
-  type ModelEntry,
-  models,
-  resolveSelection,
-  type Selection,
-  type ShowcaseEntry,
-  showcases,
-} from './library/catalog';
-import { createLibrary } from './library/menu';
 
-const viewport = requireValue(document.querySelector<HTMLElement>('#viewport'));
-const play = requireValue(document.querySelector<HTMLButtonElement>('#play'));
-const reset = requireValue(document.querySelector<HTMLButtonElement>('#reset'));
-const slider = requireValue(
-  document.querySelector<HTMLInputElement>('#timeline'),
+const preview = requireValue(document.querySelector<HTMLElement>('#preview'));
+const status = requireValue(
+  document.querySelector<HTMLElement>('#preview-status'),
 );
-const output = requireValue(document.querySelector<HTMLOutputElement>('#time'));
-const filmButton = requireValue(
-  document.querySelector<HTMLButtonElement>('#showcase'),
+const heading = requireValue(
+  document.querySelector<HTMLElement>('#product-name'),
 );
-const studioButton = requireValue(
-  document.querySelector<HTMLButtonElement>('#studio'),
+const help = requireValue(document.querySelector<HTMLElement>('#preview-help'));
+const download = requireValue(
+  document.querySelector<HTMLAnchorElement>('#asset-download'),
 );
-const chapter = requireValue(document.querySelector<HTMLElement>('#chapter'));
-const headline = requireValue(document.querySelector<HTMLElement>('#headline'));
-const caption = requireValue(document.querySelector<HTMLElement>('#caption'));
-const chapterNumber = requireValue(
-  document.querySelector<HTMLElement>('#chapter-number'),
+const category = requireValue(
+  document.querySelector<HTMLElement>('#product-category'),
 );
-const hint = requireValue(document.querySelector<HTMLElement>('#hint'));
-const params = new URLSearchParams(location.search);
-let selection = resolveSelection({
-  mode: params.get('mode') === 'studio' ? 'studio' : 'showcase',
-  modelId: params.get('model') ?? '',
-  animationId: params.get('animation') ?? '',
-  showcaseId: params.get('showcase') ?? '',
-});
+const description = requireValue(
+  document.querySelector<HTMLElement>('#product-description'),
+);
+const format = requireValue(
+  document.querySelector<HTMLElement>('#format-label'),
+);
+const modeButtons = document.querySelectorAll<HTMLButtonElement>('[data-mode]');
+const base = import.meta.env.BASE_URL;
 const events = new AbortController();
-const reducedMotion = window.matchMedia(
-  '(prefers-reduced-motion: reduce)',
-).matches;
-let viewer: ReturnType<typeof createViewer> | undefined;
-let playing = false,
-  seconds = 0,
-  startedAt = 0,
-  frame = 0,
-  lastChapter = -1;
-let resumeOnVisible = false;
-function updateChapter(index: number) {
-  const film = requireValue(
-    showcases.find((entry) => entry.id === selection.showcaseId),
-  );
-  if (lastChapter === index) return;
-  const copy = film.chapters[index] ?? ['', '', ''];
-  chapter.textContent = copy[0]
-    ? `${String(index + 1).padStart(2, '0')} — ${copy[0]}`
-    : '';
-  headline.textContent = copy[1];
-  caption.textContent = copy[2];
-  chapterNumber.textContent = String(index + 1).padStart(2, '0');
-  lastChapter = index;
-}
-const draw = () => {
-  if (!viewer) return;
-  const index = viewer.renderAt(seconds);
-  document.body.dataset.chapter = String(index);
-  updateChapter(index);
-  slider.value = String(seconds);
-  output.value = `${seconds.toFixed(2)} / ${viewer.duration.toFixed(2)} s`;
+let mediaEvents = new AbortController();
+let video: HTMLVideoElement | undefined;
+let model: ModelViewerElement | undefined;
+let revision = 0;
+let current = resolveProduct(null);
+let mode: PreviewMode = 'image';
+const failedModels = new Map<string, number>();
+
+const labels = {
+  image: ['PNG', 'Render de Blender Cycles.', 'poster.png', 'Descargar PNG'],
+  video: [
+    'MP4 · 480 × 480 · 24 FPS',
+    'Órbita de 15 s: frente, laterales y ventilador. Sin audio.',
+    'orbit.mp4',
+    'Descargar MP4',
+  ],
+  model: [
+    'GLB',
+    'Arrastrar o flechas: girar. Rueda o pellizco: zoom.',
+    'model.glb',
+    'Descargar GLB',
+  ],
 };
-const background = createBackgroundChoice(draw, events.signal);
-const tick = (now: number) => {
-  if (!viewer) return;
-  seconds = loopTime((now - startedAt) / 1000, viewer.duration);
-  draw();
-  frame = requestAnimationFrame(tick);
-};
-const pause = () => {
-  playing = false;
-  cancelAnimationFrame(frame);
-  play.textContent = 'Reproducir';
-};
-const start = () => {
-  if (playing || !viewer || play.disabled) return;
-  playing = true;
-  play.textContent = 'Pausar';
-  startedAt = performance.now() - seconds * 1000;
-  frame = requestAnimationFrame(tick);
-};
-function updateControls(
-  model: ModelEntry,
-  animation: AnimationEntry | undefined,
-) {
-  document.body.classList.toggle('showcase', selection.mode === 'showcase');
-  filmButton.setAttribute(
-    'aria-pressed',
-    String(selection.mode === 'showcase'),
+
+function poster(product: Product) {
+  const image = document.createElement('img');
+  image.src = assetPath(product, 'poster.png', base);
+  image.alt = `${product.name}. Vista de producto sobre fondo blanco.`;
+  image.width = image.height = 1200;
+  image.addEventListener(
+    'error',
+    () => {
+      status.textContent =
+        'Error al cargar el PNG. Recarga o descarga el archivo.';
+    },
+    { signal: mediaEvents.signal },
   );
-  studioButton.setAttribute(
-    'aria-pressed',
-    String(selection.mode === 'studio'),
-  );
-  const modelFilms = showcases.filter((entry) => entry.modelId === model.id);
-  filmButton.disabled = !modelFilms.length;
-  const hasPlayback =
-    selection.mode === 'showcase' ||
-    (!!animation && animation.holdAt === undefined);
-  play.disabled = slider.disabled = !hasPlayback;
-  play.hidden = slider.hidden = output.hidden = !hasPlayback;
-  reset.disabled = false;
-  slider.max = String(requireValue(viewer).duration);
+  return image;
 }
-function updateLabels(
-  model: ModelEntry,
-  film: ShowcaseEntry,
-  animation: AnimationEntry | undefined,
-) {
-  requireValue(document.querySelector('#active-model')).textContent =
-    model.name;
-  requireValue(document.querySelector('#active-experience')).textContent =
-    selection.mode === 'showcase'
-      ? film.name
-      : (animation?.name ?? 'Inspección');
-  requireValue(document.querySelector('#film-name')).textContent =
-    film.name.toUpperCase();
-  requireValue(document.querySelector('#film-edition-name')).textContent =
-    film.edition.toUpperCase();
-  requireValue(document.querySelector('#chapter-total')).textContent = String(
-    film.chapters.length,
-  ).padStart(2, '0');
-  document.body.dataset.clean = String(film.clean);
-  updateHints(model, film);
+
+function modelSource(product: Product) {
+  const attempt = failedModels.get(product.id) ?? 0;
+  const path = assetPath(product, 'model.glb', base);
+  // The viewer caches rejected GLB requests. A retry needs a fresh cache key.
+  return attempt > 0 ? `${path}?attempt=${attempt}` : path;
 }
-function updateHints(model: ModelEntry, film: ShowcaseEntry) {
-  hint.textContent =
-    selection.mode === 'showcase'
-      ? `${requireValue(viewer).duration} s · Explora la secuencia`
-      : 'Arrastra para girar · Desplaza para acercar';
-  reset.setAttribute(
-    'aria-label',
-    selection.mode === 'showcase' ? 'Restart animation' : 'Reset view',
-  );
-  document.title = `Biotérmica · ${model.name} — ${selection.mode === 'showcase' ? film.name : 'Inspect'}`;
+
+function modelFailed(product: Product) {
+  failedModels.set(product.id, (failedModels.get(product.id) ?? 0) + 1);
+  preview.removeAttribute('aria-busy');
+  preview.replaceChildren(poster(product));
+  status.textContent =
+    'Error al cargar el GLB. Reintenta con Modelo 3D o descarga el archivo.';
 }
-function updateLocation(model: ModelEntry, film: ShowcaseEntry) {
-  const url = new URL(location.href);
-  for (const [key, value] of Object.entries({
-    mode: selection.mode,
-    model: model.id,
-    animation: selection.animationId,
-    showcase: film.id,
-  }))
-    url.searchParams.set(key, value);
-  history.replaceState(null, '', url);
-}
-function autoplaySelection(autoplay: boolean) {
-  if ((selection.mode === 'showcase' || autoplay) && !reducedMotion) start();
-}
-function showSelectionError(error: unknown) {
-  console.error(error);
-  viewer?.dispose();
-  viewer = undefined;
-  document.body.classList.remove('showcase');
-  requireValue(document.querySelector<HTMLElement>('#model-actions')).hidden =
-    true;
-  viewport.textContent =
-    'This item could not be opened. Choose another item from the library or reload.';
-  play.disabled = reset.disabled = slider.disabled = true;
-}
-function finishSelection(
-  model: ModelEntry,
-  film: ShowcaseEntry,
-  animation: AnimationEntry | undefined,
-  autoplay: boolean,
-) {
-  seconds = selection.mode === 'studio' ? (animation?.holdAt ?? 0) : 0;
-  lastChapter = -1;
-  requireValue(viewer).setMode(selection.mode);
-  updateControls(model, animation);
-  updateLabels(model, film, animation);
-  updateLocation(model, film);
-  renderModelActions(selection, (animationId) => select({ animationId }, true));
-  draw();
-  autoplaySelection(autoplay);
-}
-function select(input: Partial<Selection>, autoplay = false) {
-  pause();
-  resumeOnVisible = false;
-  const next = resolveSelection({ ...selection, ...input });
-  const model = requireValue(models.find((entry) => entry.id === next.modelId));
-  const animation = animations.find((entry) => entry.id === next.animationId);
-  const film = requireValue(
-    showcases.find((entry) => entry.id === next.showcaseId),
-  );
-  viewer?.dispose();
-  viewer = undefined;
-  viewport.replaceChildren();
+
+async function showModel(product: Product, request: number) {
+  preview.setAttribute('aria-busy', 'true');
   try {
-    viewer = createViewer(viewport, {
-      model,
-      animation,
-      background,
-      showcase: next.mode === 'showcase' ? film : undefined,
+    const { ModelViewerElement } = await import('@google/model-viewer');
+    if (request !== revision) return;
+    model = new ModelViewerElement();
+    model.src = modelSource(product);
+    model.poster = assetPath(product, 'poster.png', base);
+    model.alt = `${product.name}. Modelo interactivo exportado desde Blender.`;
+    model.cameraControls = true;
+    model.shadowIntensity = 0;
+    model.cameraOrbit = '45deg 65deg auto';
+    model.setAttribute('touch-action', 'pan-y');
+    model.setAttribute('interaction-prompt', 'none');
+    model.addEventListener('load', () => preview.removeAttribute('aria-busy'), {
+      signal: mediaEvents.signal,
     });
-    selection = next;
-    finishSelection(model, film, animation, autoplay);
+    model.addEventListener('error', () => modelFailed(product), {
+      signal: mediaEvents.signal,
+    });
+    preview.replaceChildren(model);
   } catch (error) {
-    showSelectionError(error);
+    if (request !== revision) return;
+    console.error(error);
+    preview.removeAttribute('aria-busy');
+    status.textContent =
+      'Error al iniciar WebGL. Usa el PNG o descarga el GLB.';
   }
 }
-const library = createLibrary((input) => select(input));
-play.addEventListener('click', () => (playing ? pause() : start()), {
-  signal: events.signal,
-});
-slider.addEventListener(
-  'input',
-  () => {
-    pause();
-    seconds = Number(slider.value);
-    draw();
-  },
-  { signal: events.signal },
-);
-reset.addEventListener(
-  'click',
-  () => {
-    if (selection.mode === 'studio' && selection.animationId) {
-      select({ animationId: '' });
-      return;
-    }
-    pause();
-    seconds = 0;
-    viewer?.resetView();
-    draw();
-  },
-  { signal: events.signal },
-);
-filmButton.addEventListener(
-  'click',
-  () => {
-    const film = showcases.find((entry) => entry.modelId === selection.modelId);
-    if (film) select({ mode: 'showcase', showcaseId: film.id });
-  },
-  { signal: events.signal },
-);
-studioButton.addEventListener('click', () => select({ mode: 'studio' }), {
-  signal: events.signal,
-});
-requireValue(document.querySelector('#library-open')).addEventListener(
-  'click',
-  () => {
-    pause();
-    resumeOnVisible = false;
-    library.open(selection);
-  },
-  { signal: events.signal },
-);
+
+function showVideo(product: Product) {
+  video = document.createElement('video');
+  video.controls = true;
+  video.muted = true;
+  video.playsInline = true;
+  video.loop = true;
+  video.preload = 'none';
+  video.width = video.height = 480;
+  video.poster = assetPath(product, 'poster.png', base);
+  video.src = assetPath(product, 'orbit.mp4', base);
+  video.setAttribute('aria-describedby', 'preview-help');
+  video.setAttribute('aria-label', `Video de ${product.name}`);
+  video.addEventListener(
+    'error',
+    () => {
+      status.textContent =
+        'Error al reproducir el MP4. Descarga el archivo o usa el PNG.';
+    },
+    { signal: mediaEvents.signal },
+  );
+  preview.replaceChildren(video);
+}
+
+function pause() {
+  video?.pause();
+  model?.pause();
+}
+
+function updateDetails(product: Product) {
+  heading.textContent = product.name;
+  category.textContent = product.category.toUpperCase();
+  description.textContent = product.description;
+  document.title = `${product.name} · Estudio Blender · Biotérmica`;
+  for (const button of document.querySelectorAll<HTMLButtonElement>(
+    '[data-product]',
+  )) {
+    button.setAttribute(
+      'aria-current',
+      String(button.dataset.product === product.id),
+    );
+  }
+  for (const button of modeButtons) {
+    button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+    button.hidden = button.dataset.mode === 'video' && !product.video;
+  }
+  const [formatText, helpText, filename, downloadText] = requireValue(
+    labels[mode],
+  );
+  format.textContent = requireValue(formatText);
+  help.textContent = requireValue(helpText);
+  download.href = assetPath(product, requireValue(filename), base);
+  download.textContent = `${requireValue(downloadText)} ↓`;
+}
+
+function select(product: Product, nextMode: PreviewMode, writeLocation = true) {
+  pause();
+  mediaEvents.abort();
+  mediaEvents = new AbortController();
+  video = undefined;
+  model = undefined;
+  current = product;
+  mode = nextMode;
+  revision++;
+  preview.removeAttribute('aria-busy');
+  status.textContent = '';
+  updateDetails(product);
+  preview.replaceChildren(poster(product));
+  if (mode === 'video') showVideo(product);
+  if (mode === 'model') void showModel(product, revision);
+  if (writeLocation) {
+    const url = new URL(location.href);
+    url.search = new URLSearchParams({
+      product: product.id,
+      view: mode,
+    }).toString();
+    history.pushState(null, '', url);
+  }
+}
+
+function readLocation() {
+  const params = new URLSearchParams(location.search);
+  const product = resolveProduct(params.get('product') ?? params.get('model'));
+  select(product, resolveMode(params.get('view'), product), false);
+}
+
+function createLibrary() {
+  const list = requireValue(document.querySelector('#product-list'));
+  for (const product of products) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'product-button';
+    button.dataset.product = product.id;
+    const image = document.createElement('img');
+    image.src = assetPath(product, 'poster.png', base);
+    image.alt = '';
+    image.width = image.height = 54;
+    image.loading = 'lazy';
+    const text = document.createElement('span');
+    const title = document.createElement('strong');
+    title.textContent = product.name;
+    const subtitle = document.createElement('small');
+    subtitle.textContent = product.category;
+    text.append(title, subtitle);
+    button.append(image, text);
+    button.addEventListener(
+      'click',
+      () => select(product, resolveMode(mode, product)),
+      { signal: events.signal },
+    );
+    list.append(button);
+  }
+}
+
+for (const button of modeButtons) {
+  button.addEventListener(
+    'click',
+    () => select(current, resolveMode(button.dataset.mode ?? null, current)),
+    { signal: events.signal },
+  );
+}
+window.addEventListener('popstate', readLocation, { signal: events.signal });
 document.addEventListener(
   'visibilitychange',
   () => {
-    if (document.hidden) {
-      resumeOnVisible = playing;
-      pause();
-    } else if (resumeOnVisible) {
-      resumeOnVisible = false;
-      start();
-    }
+    if (document.hidden) pause();
   },
   { signal: events.signal },
 );
-select(selection);
+window.addEventListener('pagehide', pause, { signal: events.signal });
+createLibrary();
+readLocation();
 import.meta.hot?.dispose(() => {
   pause();
+  revision++;
   events.abort();
-  library.dispose();
-  viewer?.dispose();
+  mediaEvents.abort();
+  preview.replaceChildren();
 });

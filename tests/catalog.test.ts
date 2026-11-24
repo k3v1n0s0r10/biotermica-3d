@@ -1,58 +1,30 @@
 import { expect, test } from 'bun:test';
-import { requireValue } from '../src/core/require-value';
 import {
-  animations,
-  models,
-  resolveSelection,
-  showcases,
-} from '../src/library/catalog';
+  assetPath,
+  products,
+  resolveMode,
+  resolveProduct,
+} from '../src/catalog';
 
-test('all catalog references resolve and IDs are unique within each collection', () => {
-  for (const collection of [models, animations, showcases]) {
-    expect(new Set(collection.map((entry) => entry.id)).size).toBe(
-      collection.length,
+test('catalog resolves stale URLs and keeps all four migrated models', () => {
+  expect(new Set(products.map((entry) => entry.id)).size).toBe(4);
+  expect(resolveProduct('missing').id).toBe('heat-pump-v1');
+  for (const product of products)
+    expect(resolveProduct(product.id)).toBe(product);
+});
+
+test('video views are limited to models with a published film', () => {
+  for (const product of products) {
+    expect(resolveMode('video', product)).toBe(
+      product.video ? 'video' : 'image',
     );
+    expect(resolveMode('model', product)).toBe('model');
+    expect(resolveMode('unknown', product)).toBe('image');
   }
-  for (const film of showcases)
-    expect(models.some((model) => model.id === film.modelId)).toBe(true);
-  for (const animation of animations) {
-    expect(animation.modelIds.length).toBeGreaterThan(0);
-    for (const id of animation.modelIds)
-      expect(models.some((model) => model.id === id)).toBe(true);
-  }
-});
-test('stale selection links fall back to valid items while valid animation selections survive', () => {
-  const fallback = resolveSelection({
-    mode: 'studio',
-    modelId: 'removed-model',
-    animationId: 'removed-animation',
-    showcaseId: 'removed-film',
-  });
-  expect(models.some((model) => model.id === fallback.modelId)).toBe(true);
-  expect(fallback.animationId).toBe('');
-  const chosen = resolveSelection({ ...fallback, animationId: 'fan-study' });
-  expect(chosen.animationId).toBe('fan-study');
-  const film = resolveSelection({ ...chosen, mode: 'showcase' });
-  expect(film.modelId).toBe(
-    requireValue(showcases.find((entry) => entry.id === film.showcaseId))
-      .modelId,
-  );
 });
 
-test('inspection starts idle and incompatible actions never change the model', () => {
-  const modelId = 'titanium-heat-exchanger-v1';
-  expect(resolveSelection({ mode: 'studio', modelId }).animationId).toBe('');
-  const selection = resolveSelection({
-    mode: 'studio',
-    modelId,
-    animationId: 'fan-study',
-  });
-  expect(selection.modelId).toBe(modelId);
-  expect(selection.animationId).toBe('');
-  const active = resolveSelection({
-    ...selection,
-    animationId: 'exchanger-reveal',
-  });
-  expect(active.animationId).toBe('exchanger-reveal');
-  expect(resolveSelection({ ...active, animationId: '' }).animationId).toBe('');
+test('asset links support static deployments below a path prefix', () => {
+  expect(assetPath(resolveProduct(null), 'model.glb', '/studio/')).toBe(
+    '/studio/previews/heat-pump-v1/model.glb',
+  );
 });

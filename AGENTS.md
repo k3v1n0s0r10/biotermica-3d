@@ -1,9 +1,13 @@
 # Project instructions for coding agents
 
-This is a Bun, TypeScript, Vite, and Three.js product studio. Read
-`docs/ARCHITECTURE.md` before changing composition or module boundaries. Use the
-relevant skills in `.agents/skills/` for Three.js work. Preserve absolute-time
-animation sampling, named model parts, and explicit GPU resource ownership.
+This is a Blender product studio with a Bun, TypeScript, and Vite preview website.
+Read `docs/ARCHITECTURE.md` before changing composition or module boundaries.
+The native `blender/models/heat-pump.blend` owns geometry, materials, cameras,
+lighting and animation. Edit native Blender data or Python scripts; do not
+reintroduce procedural Three.js product authoring. The website only displays
+published PNG, MP4 and GLB outputs. Preserve absolute-time animation sampling,
+named model parts, and explicit ownership of Blender datablocks and web previews.
+Model-viewer is the browser display component; it uses Three.js internally.
 
 ## Shadow ownership
 
@@ -21,6 +25,9 @@ All current and future models, components, compositions, and inspection animatio
   Fallow dead-code/complexity/duplication checks, TypeScript, and a production build.
   Changes made after validation require rerunning the affected checks; the final
   source tree must have passed the complete validation command.
+- Native scene changes also require `bun run blender:validate`, regenerated
+  outputs and visual review. Rendering/publishing must never overwrite the native
+  master. CI tests the tracked public assets without requiring Blender.
 - Every Biome warning or error is blocking. Every Fallow finding reported by the
   enforced analyses is blocking, including warning-level dead-code findings.
   Do not ignore an unsuccessful command because some other check passed.
@@ -50,8 +57,8 @@ format` formats only; `bun run lint` is the non-mutating formatting, lint, and
 import-order gate. `bun run check` runs the static gates. `bun run build` also runs
 those gates, and CI runs the complete validation command.
 
-Fallow's explicit entries are the browser bootstrap, Bun tests, the duplication gate script, and the documented
-`src/models/load-model.ts` extension API. The loader is intentionally available for
-future registered GLB products; this is not permission to mark other unused code as
-an entry point. Tests are included in dead-code and health analysis. Duplication
+Fallow's explicit entries are the browser bootstrap, Bun tests, and duplication
+gate script; package commands expose the Blender runner. The retired GLTF loader
+is no longer an extension API. Do not mark other unused code as an entry point.
+Tests are included in dead-code and health analysis. Duplication
 uses Fallow's standard exclusions for test fixtures and import wiring.

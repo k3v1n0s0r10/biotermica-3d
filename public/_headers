@@ -1,0 +1,10 @@
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/previews/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/previews/studio.blend
+  Content-Type: application/octet-stream
+  Content-Disposition: attachment; filename="biotermica-studio.blend"

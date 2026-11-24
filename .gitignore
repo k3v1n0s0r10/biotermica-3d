@@ -35,3 +35,9 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # Fallow local analysis cache and reports
 .fallow/
+
+# Blender/Python and deployment intermediates
+__pycache__/
+*.pyc
+*.blend1
+.wrangler/

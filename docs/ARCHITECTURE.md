@@ -1,44 +1,50 @@
-# Modular models and animations
+# Blender source, static previews
 
-Models and animations must be reusable and composable. Model compositions assemble and connect a model's components. Showcases compose models, animations, effects, cameras and lighting into a complete presentation.
+## Ownership
 
-## Shadow ownership
+`blender/models/heat-pump.blend` owns the product meshes, materials, named parts,
+studio camera, lights and animation. `blender/catalog.json` maps stable catalog
+IDs to named roots in that scene. Model hierarchies are reusable components;
+the assembly owns placement. Mesh/material datablocks may be shared within the
+native scene. Export scripts operate in separate Blender processes and never
+save over the master file.
 
-All current and future models, components, compositions, loaders, and inspection animations are shadow-free. Inspection disables shadow maps and has no contact shadows, baked shadow textures, or ambient-occlusion effects. Ordinary material shading and reflections remain. Showcases alone may opt into shadows; showcase shadow state must be reversible when switching back to inspection.
+`src/` owns only browsing, selection, media playback, URLs and download links.
+It does not construct models, lighting rigs, or animation curves. GLB display
+uses the model-viewer web component; the application does not import Three.js.
+The component internally uses Three.js for browser rendering. Its renderer is
+loaded on demand, and detached previews stop playing when selection changes.
 
-## Models can contain models
+## Data flow
 
-- Keep model and component factories in `src/models/`, using `components/` when useful. A model can be used alone or assembled inside another model; it does not need a library entry to be reusable.
-- For example, a heat pump can contain a fan model, a compressor model and a water heat exchanger model. Those components can also be used in other products.
-- Each factory returns a fresh named group. Preserve useful local origins, units and attachment points; the parent assembly owns placement, while the child owns its internal geometry and rest transforms.
-- Expose stable named parts or explicit references for animation targets. Scope lookups to the relevant component when an assembly contains several instances of the same model.
-- Keep resource ownership explicit. The current disposal system assumes exclusive ownership per product instance; shared cached resources need an ownership policy before reuse across viewers.
+1. Edit the native Blender source and save it.
+2. Validate named parts, metre scale, shadows, loop closure and seeking.
+3. Render the still and animation frames, then encode the MP4.
+4. Publish model-only GLBs and PNGs under `public/previews/<product-id>/`.
+5. Build the static website. CI validates artifacts without running Blender.
 
-## Compositions belong to a model
+The catalog is shared by Blender publishing, the browser and artifact tests.
+Add products through the catalog and native scene, not new JavaScript factories.
+Static hosts serve published assets; they never execute Blender. Genuine Cycles
+rendering happens offline. GLB is the interactive delivery format and may differ
+in lighting from Cycles. Do not present it as a native Blender renderer.
 
-- Keep assembly-specific connections and arrangements in `src/compositions/<model>/`. For example, `src/compositions/heat-pump/piping.ts` connects the heat pump's compressor, coil and titanium exchanger.
-- The owning model calls its composition with references to the components it has assembled. Compositions use those components' attachment points and the model's coordinate frame.
-- A composition is part of its owning model, not a standalone model or library entry. Keep independently reusable physical components in `src/models/`.
-- Preserve named parts and explicit resource ownership: the owning model instance owns and disposes composition geometry and materials along with its component resources.
-- Compositions must not import their owning model factory, showcases or library UI. Model factories may import their compositions without introducing circular dependencies.
+## Shadows and animation
 
-## Models can have multiple animations
+Models and inspection remain shadow-free: no shadow-ray participation, contact
+planes, baked shadows or AO textures. Keep material lighting and reflections.
+The current white showcase is also shadow-free. Future showcase shadow settings
+must be isolated from model-only exports.
 
-- Keep reusable motion in `src/animations/`. A model can support several animations, and an animation can support several models that satisfy its target contract.
-- For example, a heat pump can support fan rotation, panel opening and an exploded view. Fan rotation can also run on a standalone fan or a compatible fan inside another product.
-- Animation factories receive a model or component reference and declare the parts and properties they control. They must not depend on a particular showcase or the library UI.
-- Use `duration` and absolute-time `sample(seconds)` so playback, seeking and composition remain deterministic.
-- Animations may run together when they control different properties. If two animations affect the same property, define sequencing, blending or a separate parent transform explicitly; do not rely on sampling order to overwrite one another accidentally.
-- Separate component motion from whole-product placement. Fan rotation should only rotate the rotor; keeping the cabinet still is an inspection concern, and moving it through a presentation is a showcase concern.
-- Reuse the same animation implementation wherever that motion appears. The fan study and heat-pump showcase both call `createFanAnimation` from `src/animations/fan.ts`; speed changes belong there and apply to both.
+Blender is Z-up in metres. GLB exports convert to glTF Y-up. The fan rotates about
+Blender local Z. Animations are authored against absolute frames, never integrated
+from previously sampled frames. The current scene renders frames 1–360 at 24 fps;
+frame 361 is the closing loop key. GLB animation includes that closing key.
 
-## Showcases are the final composition layer
+## Validation
 
-- Keep each showcase in its own descriptively named file under `src/showcases/`, such as `heat-pump-cycle.ts`.
-- A showcase chooses the assembled model, composes reusable animations and effects, and coordinates their timing with camera, lighting and chapter direction.
-- Showcases are complete presentations, not reusable building blocks for models, animations or other showcases. Models and animations must not import showcase modules. Extract reusable behavior into the appropriate lower layer when another presentation needs it.
-- Register complete products, contextual animation actions and showcases in `src/library/catalog.ts`. Keep the catalog focused on discovery, compatibility and metadata.
-
-These are extension rules, not a claim that every existing mesh is already a separate model. Extract components when they need independent reuse. The inspection view exposes compatible actions for the selected model, with one active at a time; simultaneous animation composition belongs in sequence code until the UI explicitly supports it.
-
-See [MODEL-GUIDE.md](MODEL-GUIDE.md) for coordinates and attachment points, [LIBRARY.md](LIBRARY.md) for registration, and [SHOWCASE.md](SHOWCASE.md) for the current presentation.
+`bun run validate` tests catalog resolution and actual artifact headers, geometry,
+named roots, animations, omitted lights/cameras/AO, and the native download. Biome,
+Fallow, strict TypeScript and Vite production build remain blocking gates.
+`bun run blender:validate` additionally opens and evaluates the native source.
+Review stills and several timeline positions after visual changes.

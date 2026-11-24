@@ -1,127 +1,91 @@
-# Biotérmica product studio
+# Biotérmica Blender studio
 
-Bun + TypeScript + Vite + Three.js workspace for product models and repeatable showcase animations.
+Blender is the source of truth for geometry, materials, cameras, lighting, and
+animation. The website is a static preview gallery for Blender outputs: Cycles
+stills, MP4 films, and interactive GLB models. It does not author product geometry.
 
-## Run
+## Start the preview website
 
 ```sh
 bun install --frozen-lockfile
 bun run dev
 ```
 
-Open the local URL printed by Vite. The default view plays a 24-second cinematic showcase with animated camera angles, lighting, colours and fan motion. Use **Inspeccionar** for manual orbit/zoom and the eight-second turntable. Both modes support playback and scrubbing. Reduced-motion users start paused.
+The gallery contains the heat pump, coil, compressor, and titanium exchanger.
+Choose **Imagen**, **Video**, or **Modelo 3D**. Only the heat pump currently
+has a film. Playback starts on request; switching views or hiding the page pauses
+it. Views have shareable URLs and support browser Back/Forward. The 3D viewer
+loads only when requested; image/video viewing does not download its renderer.
 
-- [Modular architecture and composition rules](docs/ARCHITECTURE.md)
-- [Continuation checklist and extension boundaries](docs/CONTINUING.md)
-- [Biotérmica brand guidelines](docs/BRAND.md)
-- [Library menus and adding new entries](docs/LIBRARY.md)
-- [Model guide and accepted design decisions](docs/MODEL-GUIDE.md)
-- [Showcase direction and animation editing](docs/SHOWCASE.md)
+## Work in Blender
 
-The showcase is a live animation; video file export is future work.
+Open [the native master scene](blender/models/heat-pump.blend) in **Blender 5.3+**.
+This is the editable source, not an intermediate generated from TypeScript.
+The complete assembly and all four components are preserved as named hierarchies.
+Edit geometry and materials in Blender, save, then regenerate outputs:
 
 ```sh
-bun run typecheck
-bun test
+bun run blender:validate # Validate source parts, units, shadows, seeking, loop
+bun run blender:render   # Cycles still, using settings authored in the .blend
+bun run blender:animate  # 360 PNG frames at 480 × 480, eight samples
+bun run blender:encode   # Encode those frames to a silent H.264 MP4
+bun run blender:publish  # Export four GLBs, component stills and preview downloads
+bun run validate        # Tests, Biome, Fallow, TypeScript and production build
+```
+
+On macOS the runner finds Blender in `/Applications/Blender.app`. Elsewhere put
+`blender` on PATH, or set `BLENDER_BIN` to the full executable path. Commands fail
+if Blender fails. Source files are never overwritten by render/export commands.
+Render intermediates live in ignored `out/blender/`; distributable outputs live
+in `public/previews/` and are tracked so deployment does not require Blender.
+
+For full-resolution frames, use Blender directly:
+
+```sh
+blender --background --python-exit-code 1 --python scripts/blender/render.py -- --animation
+```
+
+The encoder uses the generated frames. Publish only after regenerating both the
+still and movie following edits; the website should reflect the saved source.
+
+## Browser rendering and deployment
+
+A browser cannot open or execute a `.blend` file. The interactive view uses
+[`<model-viewer>`](https://modelviewer.dev/) to display a Blender-exported GLB
+with orbit/zoom controls. It uses its own WebGL renderer (internally based on
+Three.js); the application has no Three.js authoring code or direct dependency.
+GLB material lighting is an approximation of Cycles, not a live Cycles render.
+True Cycles results are supplied as images/video. Live server-side rendering
+would require a separate Blender compute service and is outside this static site.
+
+```sh
 bun run build
 bun run preview
+bun run deploy # Deploy dist as Cloudflare Workers static assets
 ```
 
-Production files are written to `dist/`. Bun manages dependencies and runs tooling; Three.js renders in the browser (WebGL 2 required).
+Build and deploy are separate. Deploy requires your Cloudflare credentials and
+uses [wrangler.jsonc](wrangler.jsonc). For another static host, upload `dist/`.
+No Blender installation is needed on the host or in web CI. Vite's `--base` option
+supports deployment beneath a path prefix. Keep individual assets below the
+host's size limit; larger future renders belong in object storage.
 
-## Code quality and agent workflow
+## Structure and quality
 
-Biome 2.5.14 handles formatting, linting, and import organization. Fallow 3.27.0
-checks dead code, complexity, and duplication. Both are pinned in `package.json`
-and `bun.lock`; TypeScript remains responsible for type checking.
+- `blender/models/heat-pump.blend`: authoritative native scene.
+- `blender/catalog.json`: stable product IDs, named object roots and gallery copy.
+- `scripts/blender/`: native rendering, validation, GLB publishing and encoding.
+- `scripts/blender.ts`: cross-platform Blender command runner.
+- `src/`: the preview interface; no procedural product modeling.
+- `public/previews/`: published GLBs, PNGs, MP4 and native download.
+- `tests/`: catalog behavior and actual published artifact integrity.
 
-```sh
-bun run format        # Apply formatting
-bun run lint:fix      # Apply formatting and safe lint/import fixes
-bun run lint          # Check without changing files; warnings fail
-bun run analyze       # Fallow gates across the entire project
-bun run analyze:json  # Full Fallow evidence for agents, as JSON
-bun run check         # Biome + Fallow + TypeScript
-bun run validate      # Tests + all static checks + production build
-```
+[Architecture](docs/ARCHITECTURE.md), [model conventions](docs/MODEL-GUIDE.md),
+[showcase workflow](docs/SHOWCASE.md), [library extension](docs/LIBRARY.md),
+[continuation checklist](docs/CONTINUING.md), and [brand](docs/BRAND.md).
 
-`bun run build` includes the static gates. The GitHub Actions `Quality` workflow
-runs `bun run validate` on pushes and pull requests. Repository administrators can
-require its `validate` job in branch protection to block merging failed checks.
-
-Agents must follow [AGENTS.md](AGENTS.md): inspect affected code, resolve all tool
-warnings/errors, and pass validation before reporting completion. Rules must not
-be weakened or findings hidden to make checks pass. Fallow's informational scores,
-churn metrics, and refactoring suggestions guide investigation; its configured
-findings are enforced with nonzero exits. A small JSON-report gate enforces zero
-duplicate groups because Fallow 3.27 does not fail `dupes --fail-on-issues` at
-its default unlimited duplication threshold. No inherited-issue baseline is used.
-
-The GLTF loader is an explicit Fallow entry because it is a documented extension
-API, although the current catalog builds its model procedurally. The browser
-entry and Bun tests are also explicit. Generated output, dependency directories,
-and Fallow caches are ignored; Biome excludes the bundled agent skill directories.
-
-For context before editing, run `bunx --no-install fallow inspect --file src/main.ts`.
-See the [Biome linter reference](https://biomejs.dev/linter/) and
-[Fallow CLI documentation](https://fallow.tools/docs/) for tool behavior.
-
-## Structure
-
-```text
-src/
-  main.ts              Selection and playback lifecycle
-  brand/
-    theme.ts           Shared company and showcase palette
-  library/
-    catalog.ts         Models, animations, showcases and compatibility
-    menu.ts            Searchable library interface
-  core/
-    viewer.ts          Renderer, camera, controls, resizing, cleanup
-    dispose.ts         GPU resource cleanup for owned model assets
-  models/
-    heat-pump.ts       Square cabinet, corner lid, grilles, fan, service ports
-    load-model.ts      Standard GLB/glTF loader
-  scenes/
-    studio.ts          Product assembly, studio lights, floor
-  animations/
-    turntable.ts       Absolute-time sequence interface and inspection loop
-    fan.ts             Shared rotor motion for inspection and showcases
-    heat-flow.ts       Four-stage air and water effects
-  showcases/
-    heat-pump-cycle.ts Complete heat-pump presentation composing shared animations
-  style.css
-public/
-  brand/               Official Biotérmica emblem
-  models/              Product GLB/glTF assets, grouped by product
-  textures/            Shared texture maps
-  environments/        HDR/EXR lighting assets for future scenes
-tests/                Bun animation tests
-```
-
-## Add a product
-
-Models can contain other models and support multiple reusable animations. Showcases are the final layer that connects these parts into a presentation. Follow the [architecture rules](docs/ARCHITECTURE.md) when extending the project.
-
-1. Export a standard `.glb` into `public/models/<product-id>/model.glb`. For `.gltf`, retain its relative texture and binary paths.
-2. Load it with `await loadModel('models/<product-id>/model.glb')` from `src/models/load-model.ts`.
-3. Register a model factory in `src/library/catalog.ts`. For async GLB factories, extend the viewer/selection lifecycle to await loading before starting playback and keep errors visible.
-4. Put product-specific assembly/material logic in `src/models/`; keep camera and lighting arrangements in `src/scenes/`.
-
-Conventions: one world unit = one metre, +Y up, +Z product front, origin centered on the floor beneath the product. The loader preserves authored transforms and named parts. Use stable part names for future fan, panel, and exploded-view animations. Draco, Meshopt, and KTX2 decoder support can be added when assets require it; the starter loader handles standard uncompressed assets.
-
-## Reproducible animation
-
-Each sequence exposes `duration` (seconds) and `sample(seconds)`. Assign animated properties from absolute time; avoid accumulating rotation or relying on previous frames. `viewer.renderAt(seconds)` samples and renders directly. For a future frame capture pipeline, call it with `frameIndex / fps` after fixing the camera and output size.
-
-In inspection mode, orbit controls change the camera independently of animation; showcase mode owns the camera. Reset the view before comparing renders. Poses are repeatable; pixel-identical output across GPUs/browsers is not guaranteed. Video encoding/export is not implemented yet.
-
-Add sequences in `src/animations/` and register them in `src/library/catalog.ts`. Loaded animation clips are available as `gltf.animations`; when adding a mixer, drive it from absolute sequence time and test backward seeking as well as playback.
-
-The viewer disposes its controls, resize observer, geometry, materials, textures, shadows, and renderer on hot reload. The cleanup helper assumes exclusive asset ownership; introduce explicit shared-resource ownership before caching models across viewers.
-
-Dependencies are locked in `bun.lock`. Three.js itself makes the initial production bundle exceed Vite's default 500 kB warning threshold; the build succeeds. Split additional models/scenes into lazy imports as the catalogue grows.
-
-## Reference model
-
-`createHeatPump()` builds an unbranded visual concept from the supplied product image and CGAxis reference. It uses a dark square cabinet, a flush corner electrical lid, and a shallow bottom service pocket. Slots are actual holes, coil fins are instanced, and fan/guard/lid groups have stable names for animation. Dimensions are illustrative, not measured engineering data.
+`bun run lint:fix` applies safe formatting/lint fixes; `bun run validate` enforces
+all gates. Native scene changes also require `bun run blender:validate` and visual
+review. Old procedural Three.js code and its runtime-specific tests were retired
+in the Blender migration. A local migration backup is in ignored
+`out/legacy-threejs.tar.gz`; it is not part of the application or deployment.

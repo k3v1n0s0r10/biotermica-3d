@@ -1,17 +1,16 @@
 {
-  "name": "3d",
+  "name": "biotermica-blender-studio",
   "type": "module",
   "private": true,
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
     "@types/bun": "latest",
-    "@types/three": "^0.186.0",
     "fallow": "3.27.0",
     "vite": "^8.3.0",
     "wrangler": "^4.134.0"
   },
   "dependencies": {
-    "three": "^0.186.0",
+    "@google/model-viewer": "^4.4.0",
     "typescript": "^7.0.2"
   },
   "scripts": {
@@ -27,6 +26,12 @@
     "analyze:json": "fallow --format json --fail-on-issues",
     "check": "bun run lint && bun run analyze && bun run typecheck",
     "validate": "bun test && bun run build",
-    "analyze:dupes": "bun scripts/check-duplicates.ts"
+    "analyze:dupes": "bun scripts/check-duplicates.ts",
+    "blender:render": "bun scripts/blender.ts render",
+    "blender:animate": "bun scripts/blender.ts animate",
+    "blender:encode": "bun scripts/blender.ts encode",
+    "blender:publish": "bun scripts/blender.ts publish",
+    "blender:validate": "bun scripts/blender.ts validate",
+    "deploy": "bun run build && wrangler deploy"
   }
 }
